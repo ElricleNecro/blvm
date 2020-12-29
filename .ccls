@@ -1,0 +1,8 @@
+clang
+%c -std=c17
+%h
+-Iinclude
+-W
+-Wall
+-Wextra
+-pedantic
