@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "Parser.h"
+
 #include "blvm/blvm.h"
 #include "stringview.h"
 
@@ -111,13 +113,26 @@ StringView load_file(const char *fpath) {
 }
 
 int main(int argc, const char *argv[]) {
-	if( argc != 3 ) {
-		fprintf(stderr, "Usage: %s [input] [output]\n", argv[0]);
-		exit(EXIT_FAILURE);
+	char *output = "a.bl";
+
+	Args *args = Args_New();
+	Args_Error err;
+
+	Args_Add(args, "-o", "--output", T_CHAR, &output, "LUA configuration file.");
+
+	err = Args_Parse(args, argc, argv);
+	if( err == TREAT_ERROR ) {
+		Args_Free(args);
+		return EXIT_FAILURE;
+	} else if( err == HELP ) {
+		Args_Free(args);
+		return EXIT_SUCCESS;
+	} else if( args->rest == NULL ) {
+		fprintf(stderr, "Missing arguments.");
+		return EXIT_FAILURE;
 	}
 
-	const char *input = argv[1];
-	const char *output = argv[2];
+	const char *input = args->rest->opt;
 
 	Blisp bl = {0};
 

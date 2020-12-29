@@ -1,15 +1,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "Parser.h"
+
 #include "blvm/blvm.h"
 
 int main(int argc, const char *argv[]) {
-	if( argc != 2 ) {
-		fprintf(stderr, "Usage: %s [program]\n", argv[0]);
-		exit(EXIT_FAILURE);
+	Args *args = Args_New();
+	Args_Error err;
+
+	err = Args_Parse(args, argc, argv);
+	if( err == TREAT_ERROR ) {
+		Args_Free(args);
+		return EXIT_FAILURE;
+	} else if( err == HELP ) {
+		Args_Free(args);
+		return EXIT_SUCCESS;
+	} else if( args->rest == NULL ) {
+		fprintf(stderr, "Missing arguments.");
+		return EXIT_FAILURE;
 	}
 
-	const char *program = argv[1];
+	const char *program = args->rest->opt;
 
 	Blisp bl = {0};
 

@@ -1,0 +1,3 @@
+[submodule ".submodule/ParseArgsC"]
+	path = .submodule/ParseArgsC
+	url = https://github.com/ElricleNecro/ParseArgsC.git

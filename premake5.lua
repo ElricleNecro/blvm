@@ -8,6 +8,23 @@ workspace "BLVM"
 
 		warnings "Extra"
 
+project("ParseArgsC")
+	language("C")
+	kind("SharedLib")
+
+	location("build/")
+	targetdir("build/%{prj.name}/lib")
+
+	includedirs {
+		".submodule/ParseArgsC/include/",
+	}
+
+	files(
+		{
+			".submodule/%{prj.name}/src/Parser.c"
+		}
+	)
+
 project "blvm"
 	filename ".blvm"
 	kind "SharedLib"
@@ -19,6 +36,7 @@ project "blvm"
 
 	includedirs {
 		"include/%{prj.name}",
+		".submodule/ParseArgsC/include/",
 	}
 
 	filter "system:windows"
@@ -50,14 +68,17 @@ project "blvi"
 	includedirs {
 		"include/blvm",
 		"include/%{prj.name}",
+		".submodule/ParseArgsC/include/",
 	}
 
 	links {
-		"blvm"
+		"blvm",
+		"ParseArgsC",
 	}
 
 	libdirs {
-		"build/blvm/lib"
+		"build/blvm/lib",
+		"build/ParseArgsC/lib",
 	}
 
 	filter "system:windows"
@@ -90,14 +111,17 @@ project "blasm"
 	includedirs {
 		"include/blvm",
 		"include/%{prj.name}",
+		".submodule/ParseArgsC/include/",
 	}
 
 	links {
-		"blvm"
+		"blvm",
+		"ParseArgsC",
 	}
 
 	libdirs {
-		"build/blvm/lib"
+		"build/blvm/lib",
+		"build/ParseArgsC/lib",
 	}
 
 	filter "system:windows"
