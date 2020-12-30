@@ -215,3 +215,16 @@ Trap blvm_execute_inst(Blvm *bl) {
 
 	return TRAP_OK;
 }
+
+Trap blvm_execute_program(Blvm *bl, int limit) {
+	while( limit != 0 && ! bl->halt ) {
+		Trap err = blvm_execute_inst(bl);
+		if( err != TRAP_OK )
+			return err;
+
+		if( limit > 0 )
+			limit--;
+	}
+
+	return TRAP_OK;
+}

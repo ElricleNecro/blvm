@@ -38,5 +38,6 @@ void blvm_dump_stack(const Blvm *bl, FILE *stream);
 void blvm_show_state(const Blvm *bl, FILE *stream);
 
 Trap blvm_execute_inst(Blvm *bl);
+Trap blvm_execute_program(Blvm *bl, int limit);
 
 #endif /* end of include guard: BLISP_H_LK4X8KOQ */
