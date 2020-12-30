@@ -9,7 +9,7 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 
-	Blisp bl = {0};
+	Blvm bl = {0};
 	blvm_load_program_from_file(&bl, argv[1]);
 
 	for(size_t idx = 0; idx < bl.program_size; idx++) {

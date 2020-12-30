@@ -134,7 +134,7 @@ int main(int argc, const char *argv[]) {
 
 	const char *input = args->rest->opt;
 
-	Blisp bl = {0};
+	Blvm bl = {0};
 
 	StringView src = load_file(input);
 	bl.program_size = translate_source(src, &bl.program);

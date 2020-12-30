@@ -1,22 +1,22 @@
 #include "blvm/blvm.h"
 
-void blvm_clean(Blisp *bl) {
+void blvm_clean(Blvm *bl) {
 	free(bl->program), bl->program_size = 0;
 }
 
-void blvm_push_inst(Blisp *bl, Inst inst) {
+void blvm_push_inst(Blvm *bl, Inst inst) {
 	assert(bl->program_size < BLISP_PROGRAM_CAPACITY);
 	bl->program[bl->program_size++] = inst;
 }
 
-void blvm_load_program_from_memory(Blisp *bl, const Inst *program, Word size) {
+void blvm_load_program_from_memory(Blvm *bl, const Inst *program, Word size) {
 	bl->program = malloc(size * sizeof(struct inst_t));
 	bl->program_size = size;
 
 	memcpy(bl->program, program, size * sizeof(struct inst_t));
 }
 
-void blvm_load_program_from_file(Blisp *bl, const char *fpath) {
+void blvm_load_program_from_file(Blvm *bl, const char *fpath) {
 	FILE *file = NULL;
 
 	if( (file = fopen(fpath, "rb")) == NULL ) {
@@ -56,7 +56,7 @@ void blvm_load_program_from_file(Blisp *bl, const char *fpath) {
 	fclose(file);
 }
 
-void blvm_save_program_to_file(Blisp bl, const char *fpath) {
+void blvm_save_program_to_file(Blvm bl, const char *fpath) {
 	FILE *file = NULL;
 
 	if( (file = fopen(fpath, "wb")) == NULL ) {
@@ -73,7 +73,7 @@ void blvm_save_program_to_file(Blisp bl, const char *fpath) {
 	fclose(file);
 }
 
-void blvm_dump_stack(const Blisp *bl, FILE *stream) {
+void blvm_dump_stack(const Blvm *bl, FILE *stream) {
 	fprintf(stream, "Stack:\n");
 	if( bl->sp > 0) {
 		for(Word i = 0; i < bl->sp; ++i)
@@ -83,7 +83,7 @@ void blvm_dump_stack(const Blisp *bl, FILE *stream) {
 	}
 }
 
-void blvm_show_state(const Blisp *bl, FILE *stream) {
+void blvm_show_state(const Blvm *bl, FILE *stream) {
 		fprintf(stream, "0x%03lX: %s", bl->ip, insttype_as_cstr(bl->program[bl->ip].type));
 
 		if( bl->program[bl->ip].type == INST_PUSH || bl->program[bl->ip].type == INST_DUP || bl->program[bl->ip].type == INST_JMP )
@@ -92,7 +92,7 @@ void blvm_show_state(const Blisp *bl, FILE *stream) {
 		fprintf(stream, " (sp: 0x%03lX)\n", bl->sp);
 }
 
-Trap blvm_execute_inst(Blisp *bl) {
+Trap blvm_execute_inst(Blvm *bl) {
 	if( bl->ip < 0 || bl->ip >= bl->program_size )
 		return TRAP_ILLEGAL_INST_ACCESS;
 
