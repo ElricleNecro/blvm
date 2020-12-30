@@ -9,6 +9,9 @@ int main(int argc, const char *argv[]) {
 	Args *args = Args_New();
 	Args_Error err;
 
+	int limit = -1;
+	Args_Add(args, "-m", "--max", T_INT, &limit, "Maximum number of instruction to run.");
+
 	err = Args_Parse(args, argc, argv);
 	if( err == TREAT_ERROR ) {
 		Args_Free(args);
