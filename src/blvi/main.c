@@ -25,8 +25,6 @@ int main(int argc, const char *argv[]) {
 
 	Blvm bl = {0};
 
-	/*blvm_load_program_from_memory(&bl, program, STATIC_ARRAY_SIZE(program));*/
-	/*blvm_save_program_to_file(&bl, "fibonacci.bl");*/
 	blvm_load_program_from_file(&bl, program);
 
 	while( ! bl.halt ) {
