@@ -1,9 +1,10 @@
 # Fibonacci suit:
 	push 0
 	push 1
+loop:
 	dup 1 # To keep the full suit in stack.
 	dup 1
 	add
-	jmp 2
+	jmp loop
 # This will never be reached.
 	halt
