@@ -86,10 +86,18 @@ void translate_source(Blvm *bl, StringView src, Records *records) {
 			inst.type = INST_DIV;
 		} else if( stringview_eq(name, cstr_as_stringview("jmp")) ) {
 			inst.type = INST_JMP;
-			records_push_unresolved(records, bl->program_size, operand);
+			if( operand.count > 0 && isdigit(*operand.data) ) {
+				inst.operand = stringview_to_int(operand);
+			} else {
+				records_push_unresolved(records, bl->program_size, operand);
+			}
 		} else if( stringview_eq(name, cstr_as_stringview("jif")) ) {
 			inst.type = INST_JIF;
-			records_push_unresolved(records, bl->program_size, operand);
+			if( operand.count > 0 && isdigit(*operand.data) ) {
+				inst.operand = stringview_to_int(operand);
+			} else {
+				records_push_unresolved(records, bl->program_size, operand);
+			}
 		} else if( stringview_eq(name, cstr_as_stringview("eq")) ) {
 			inst.type = INST_EQ;
 		} else if( stringview_eq(name, cstr_as_stringview("gt")) ) {
