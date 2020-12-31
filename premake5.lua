@@ -141,7 +141,7 @@ project "blasm"
 		flags { "LinkTimeOptimization", "FatalWarnings" }
 
 project "deblasm"
-	filename ".asm"
+	filename ".deasm"
 	kind "ConsoleApp"
 
 	location "build/"
