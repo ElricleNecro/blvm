@@ -59,7 +59,7 @@ size_t translate_source(StringView src, Inst **program) {
 		StringView line = stringview_split(&src, '\n');
 		line = stringview_trim(line);
 
-		if( line.count <= 0 )
+		if( line.count <= 0 || *line.data == '#' )
 			continue;
 
 		*program = realloc(*program, (program_size + 1) * sizeof(struct inst_t));
