@@ -61,12 +61,19 @@ void translate_source(Blvm *bl, StringView src, Records *records) {
 
 		Inst inst;
 		StringView name = stringview_split(&line, ' ');
-		StringView operand = stringview_trim(stringview_split(&line, '#'));
 
 		if( stringview_endwith(name, ':') ) {
 			records_push_label(records, (StringView){.data = name.data, .count = name.count - 1}, bl->program_size);
+			do {
+				name = stringview_split(&line, ' ');
+			} while( name.count <= 0 && line.count > 0 );
+		}
+
+		if( name.count <= 0 || *line.data == '#' )
 			continue;
-		} else if( stringview_eq(name, cstr_as_stringview("push")) ) {
+
+		StringView operand = stringview_trim(stringview_split(&line, '#'));
+		if( stringview_eq(name, cstr_as_stringview("push")) ) {
 			int value = stringview_to_int(operand);
 			inst.type = INST_PUSH;
 			inst.operand = value;
