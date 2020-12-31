@@ -6,51 +6,49 @@
 #include "blvm/blvm.h"
 #include "stringview.h"
 
-Inst translate_line(StringView line) {
-	line = stringview_ltrim(line);
-	StringView name = stringview_split(&line, ' ');
-	StringView operand = stringview_trim(stringview_split(&line, '#'));
+typedef struct label_t {
+	StringView name;
+	Word addr;
+} Label;
 
-	if( stringview_eq(name, cstr_as_stringview("push")) ) {
-		int value = stringview_to_int(operand);
-		return (Inst){.type = INST_PUSH, .operand = value};
-	} else if( stringview_eq(name, cstr_as_stringview("pop")) ) {
-		return (Inst){.type = INST_POP,};
-	} else if( stringview_eq(name, cstr_as_stringview("dup")) ) {
-		int value = stringview_to_int(operand);
-		return (Inst){.type = INST_DUP, .operand = value};
-	} else if( stringview_eq(name, cstr_as_stringview("add")) ) {
-		return (Inst){.type = INST_ADD};
-	} else if( stringview_eq(name, cstr_as_stringview("sub")) ) {
-		return (Inst){.type = INST_SUB};
-	} else if( stringview_eq(name, cstr_as_stringview("mul")) ) {
-		return (Inst){.type = INST_MUL};
-	} else if( stringview_eq(name, cstr_as_stringview("div")) ) {
-		return (Inst){.type = INST_DIV};
-	} else if( stringview_eq(name, cstr_as_stringview("jmp")) ) {
-		int value = stringview_to_int(operand);
-		return (Inst){.type = INST_JMP, .operand = value};
-	} else if( stringview_eq(name, cstr_as_stringview("jif")) ) {
-		int value = stringview_to_int(operand);
-		return (Inst){.type = INST_JIF, .operand = value};
-	} else if( stringview_eq(name, cstr_as_stringview("eq")) ) {
-		return (Inst){.type = INST_EQ};
-	} else if( stringview_eq(name, cstr_as_stringview("gt")) ) {
-		return (Inst){.type = INST_GT};
-	} else if( stringview_eq(name, cstr_as_stringview("halt")) ) {
-		return (Inst){.type = INST_HALT};
-	} else if( stringview_eq(name, cstr_as_stringview("debug")) ) {
-		return (Inst){.type = INST_PRINT_DEBUG};
-	} else {
-		fprintf(stderr, "ERROR: unknown instruction '%.*s'\n", (int)name.count, name.data);
-		exit(EXIT_FAILURE);
-	}
+typedef struct unresolved_t {
+	Word addr;
+	StringView name;
+} Unresolved;
 
-	return (Inst){0};
+typedef struct records_t {
+	Label *labels;
+	size_t labels_size;
+
+	Unresolved *jmps;
+	size_t jmps_size;
+} Records;
+
+Word records_find_label(Records records, StringView name) {
+	for(size_t idx=0; idx < records.labels_size; idx++)
+		if( stringview_eq(records.labels[idx].name, name) )
+			return records.labels[idx].addr;
+
+	return -1;
 }
 
-size_t translate_source(StringView src, Inst **program) {
-	size_t program_size = 0;
+void records_push_label(Records *records, StringView name, Word addr) {
+	records->labels = realloc(records->labels, (records->labels_size + 1) * sizeof(struct label_t));
+	records->labels[records->labels_size++] = (Label){.name = name, .addr = addr};
+}
+
+void records_push_unresolved(Records *records, Word addr, StringView name) {
+	records->jmps = realloc(records->jmps, (records->jmps_size + 1) * sizeof(struct unresolved_t));
+	records->jmps[records->jmps_size++] = (Unresolved){.addr = addr, .name = name};
+}
+
+void records_free(Records *records) {
+	free(records->labels), records->labels = NULL, records->labels_size = 0;
+}
+
+void translate_source(Blvm *bl, StringView src, Records *records) {
+	if( bl->program != NULL )
+		free(bl->program), bl->program = NULL, bl->program_size = 0;
 
 	while( src.count > 0 ) {
 		StringView line = stringview_split(&src, '\n');
@@ -59,11 +57,64 @@ size_t translate_source(StringView src, Inst **program) {
 		if( line.count <= 0 || *line.data == '#' )
 			continue;
 
-		*program = realloc(*program, (program_size + 1) * sizeof(struct inst_t));
-		(*program)[program_size++] = translate_line(line);
+		line = stringview_trim(line);
+
+		Inst inst;
+		StringView name = stringview_split(&line, ' ');
+		StringView operand = stringview_trim(stringview_split(&line, '#'));
+
+		if( stringview_endwith(name, ':') ) {
+			records_push_label(records, (StringView){.data = name.data, .count = name.count - 1}, bl->program_size);
+			continue;
+		} else if( stringview_eq(name, cstr_as_stringview("push")) ) {
+			int value = stringview_to_int(operand);
+			inst.type = INST_PUSH;
+			inst.operand = value;
+		} else if( stringview_eq(name, cstr_as_stringview("pop")) ) {
+			inst.type = INST_POP;
+		} else if( stringview_eq(name, cstr_as_stringview("dup")) ) {
+			int value = stringview_to_int(operand);
+			inst.type = INST_DUP;
+			inst.operand = value;
+		} else if( stringview_eq(name, cstr_as_stringview("add")) ) {
+			inst.type = INST_ADD;
+		} else if( stringview_eq(name, cstr_as_stringview("sub")) ) {
+			inst.type = INST_SUB;
+		} else if( stringview_eq(name, cstr_as_stringview("mul")) ) {
+			inst.type = INST_MUL;
+		} else if( stringview_eq(name, cstr_as_stringview("div")) ) {
+			inst.type = INST_DIV;
+		} else if( stringview_eq(name, cstr_as_stringview("jmp")) ) {
+			inst.type = INST_JMP;
+			records_push_unresolved(records, bl->program_size, operand);
+		} else if( stringview_eq(name, cstr_as_stringview("jif")) ) {
+			inst.type = INST_JIF;
+			records_push_unresolved(records, bl->program_size, operand);
+		} else if( stringview_eq(name, cstr_as_stringview("eq")) ) {
+			inst.type = INST_EQ;
+		} else if( stringview_eq(name, cstr_as_stringview("gt")) ) {
+			inst.type = INST_GT;
+		} else if( stringview_eq(name, cstr_as_stringview("halt")) ) {
+			inst.type = INST_HALT;
+		} else if( stringview_eq(name, cstr_as_stringview("debug")) ) {
+			inst.type = INST_PRINT_DEBUG;
+		} else {
+			fprintf(stderr, "ERROR: unknown instruction '%.*s'\n", (int)name.count, name.data);
+			exit(EXIT_FAILURE);
+		}
+
+		bl->program = realloc(bl->program, (bl->program_size + 1) * sizeof(struct inst_t));
+		bl->program[bl->program_size++] = inst;
 	}
 
-	return program_size;
+	for(size_t idx = 0; idx < records->jmps_size; idx++) {
+		bl->program[records->jmps[idx].addr].operand = records_find_label(*records, records->jmps[idx].name);
+
+		if( bl->program[records->jmps[idx].addr].operand < 0 ) {
+			fprintf(stderr, "ERROR: undefined label '%.*s'.\n", (int)records->jmps[idx].name.count, records->jmps[idx].name.data);
+			exit(EXIT_FAILURE);
+		}
+	}
 }
 
 StringView load_file(const char *fpath) {
@@ -132,12 +183,14 @@ int main(int argc, const char *argv[]) {
 	const char *input = args->rest->opt;
 
 	Blvm bl = {0};
+	Records records = {0};
 
 	StringView src = load_file(input);
-	bl.program_size = translate_source(src, &bl.program);
+	translate_source(&bl, src, &records);
 	blvm_save_program_to_file(bl, output);
 
 	blvm_clean(&bl);
+	records_free(&records);
 	free(src.data);
 
 	return EXIT_SUCCESS;
