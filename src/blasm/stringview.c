@@ -77,4 +77,3 @@ int stringview_to_int(StringView sv) {
 
 	return result;
 }
-

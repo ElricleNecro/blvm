@@ -19,6 +19,4 @@ bool stringview_eq(StringView a, StringView b);
 bool stringview_endwith(StringView sv, const char end);
 int stringview_to_int(StringView sv);
 
-
-
 #endif /* end of include guard: STRINGVIEW_H_SLZDE4UB */
