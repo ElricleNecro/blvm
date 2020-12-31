@@ -63,6 +63,12 @@ bool stringview_eq(StringView a, StringView b) {
 	return memcmp(a.data, b.data, a.count) == 0;
 }
 
+bool stringview_endwith(StringView sv, const char end) {
+	if( sv.count > 0 && sv.data[sv.count - 1] == end)
+		return true;
+	return false;
+}
+
 int stringview_to_int(StringView sv) {
 	int result = 0;
 
