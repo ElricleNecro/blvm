@@ -3,39 +3,39 @@
 const char* insttype_as_cstr(InstType type) {
 	switch(type) {
 		case INST_NOP:
-			return "NOP";
+			return "nop";
 
 		case INST_PUSH:
-			return "PUSH";
+			return "push";
 		case INST_POP:
-			return "POP";
+			return "pop";
 		case INST_DUP:
-			return "DUP";
+			return "dup";
 
 		case INST_ADD:
-			return "ADD";
+			return "add";
 		case INST_SUB:
-			return "SUB";
+			return "sub";
 		case INST_MUL:
-			return "MUL";
+			return "mul";
 		case INST_DIV:
-			return "DIV";
+			return "div";
 
 		case INST_JMP:
-			return "JMP";
+			return "jmp";
 		case INST_JIF:
-			return "JIF";
+			return "jif";
 
 		case INST_EQ:
-			return "EQ";
+			return "eq";
 		case INST_GT:
-			return "GT";
+			return "gt";
 
 		case INST_HALT:
-			return "HALT";
+			return "halt";
 
 		case INST_PRINT_DEBUG:
-			return "PRINT_DEBUG";
+			return "print_debug";
 		default:
 			assert(0 && "insttype_as_cstr: Unreachable");
 	}
