@@ -4,11 +4,6 @@ void blvm_clean(Blvm *bl) {
 	free(bl->program), bl->program_size = 0;
 }
 
-void blvm_push_inst(Blvm *bl, Inst inst) {
-	assert(bl->program_size < BLISP_PROGRAM_CAPACITY);
-	bl->program[bl->program_size++] = inst;
-}
-
 void blvm_load_program_from_memory(Blvm *bl, const Inst *program, Word size) {
 	bl->program = malloc(size * sizeof(struct inst_t));
 	bl->program_size = size;

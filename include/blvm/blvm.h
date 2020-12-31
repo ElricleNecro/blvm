@@ -28,8 +28,6 @@ typedef struct blvm_t {
 
 void blvm_clean(Blvm *bl);
 
-void blvm_push_inst(Blvm *bl, Inst inst);
-
 void blvm_load_program_from_memory(Blvm *bl, const Inst *program, Word size);
 void blvm_load_program_from_file(Blvm *bl, const char *fpath);
 void blvm_save_program_to_file(Blvm bl, const char *fpath);
