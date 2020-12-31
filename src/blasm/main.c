@@ -118,7 +118,7 @@ int main(int argc, const char *argv[]) {
 	Args *args = Args_New();
 	Args_Error err;
 
-	Args_Add(args, "-o", "--output", T_CHAR, &output, "LUA configuration file.");
+	Args_Add(args, "-o", "--output", T_CHAR, &output, "Compiled program.");
 
 	err = Args_Parse(args, argc, argv);
 	if( err == TREAT_ERROR ) {
