@@ -9,17 +9,16 @@
 Inst translate_line(StringView line) {
 	line = stringview_ltrim(line);
 	StringView name = stringview_split(&line, ' ');
+	StringView operand = stringview_trim(stringview_split(&line, '#'));
 
 	if( stringview_eq(name, cstr_as_stringview("push")) ) {
-		line = stringview_ltrim(line);
-		int operand = stringview_to_int(stringview_rtrim(line));
-		return (Inst){.type = INST_PUSH, .operand = operand};
+		int value = stringview_to_int(operand);
+		return (Inst){.type = INST_PUSH, .operand = value};
 	} else if( stringview_eq(name, cstr_as_stringview("pop")) ) {
 		return (Inst){.type = INST_POP,};
 	} else if( stringview_eq(name, cstr_as_stringview("dup")) ) {
-		line = stringview_ltrim(line);
-		int operand = stringview_to_int(stringview_rtrim(line));
-		return (Inst){.type = INST_DUP, .operand = operand};
+		int value = stringview_to_int(operand);
+		return (Inst){.type = INST_DUP, .operand = value};
 	} else if( stringview_eq(name, cstr_as_stringview("add")) ) {
 		return (Inst){.type = INST_ADD};
 	} else if( stringview_eq(name, cstr_as_stringview("sub")) ) {
@@ -29,13 +28,11 @@ Inst translate_line(StringView line) {
 	} else if( stringview_eq(name, cstr_as_stringview("div")) ) {
 		return (Inst){.type = INST_DIV};
 	} else if( stringview_eq(name, cstr_as_stringview("jmp")) ) {
-		line = stringview_ltrim(line);
-		int operand = stringview_to_int(stringview_rtrim(line));
-		return (Inst){.type = INST_JMP, .operand = operand};
+		int value = stringview_to_int(operand);
+		return (Inst){.type = INST_JMP, .operand = value};
 	} else if( stringview_eq(name, cstr_as_stringview("jif")) ) {
-		line = stringview_ltrim(line);
-		int operand = stringview_to_int(stringview_rtrim(line));
-		return (Inst){.type = INST_JIF, .operand = operand};
+		int value = stringview_to_int(operand);
+		return (Inst){.type = INST_JIF, .operand = value};
 	} else if( stringview_eq(name, cstr_as_stringview("eq")) ) {
 		return (Inst){.type = INST_EQ};
 	} else if( stringview_eq(name, cstr_as_stringview("gt")) ) {
