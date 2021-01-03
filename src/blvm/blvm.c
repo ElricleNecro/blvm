@@ -4,7 +4,7 @@ void blvm_clean(Blvm *bl) {
 	free(bl->program), bl->program_size = 0;
 }
 
-void blvm_load_program_from_memory(Blvm *bl, const Inst *program, Word size) {
+void blvm_load_program_from_memory(Blvm *bl, const Inst *program, size_t size) {
 	bl->program = malloc(size * sizeof(struct inst_t));
 	bl->program_size = size;
 
@@ -71,8 +71,8 @@ void blvm_save_program_to_file(Blvm bl, const char *fpath) {
 void blvm_dump_stack(const Blvm *bl, FILE *stream) {
 	fprintf(stream, "Stack:\n");
 	if( bl->sp > 0) {
-		for(Word i = 0; i < bl->sp; ++i)
-			fprintf(stream, "\t%lu\n", bl->stack[i]);
+		for(uint64_t i = 0; i < bl->sp; ++i)
+			fprintf(stream, "\t%lu %ld %lf %p\n", bl->stack[i].u64, bl->stack[i].i64, bl->stack[i].f64, bl->stack[i].ptr);
 	} else {
 		fprintf(stream, "\t[empty]\n");
 	}
@@ -82,13 +82,13 @@ void blvm_show_state(const Blvm *bl, FILE *stream) {
 		fprintf(stream, "0x%03lX: %s", bl->ip, insttype_as_cstr(bl->program[bl->ip].type));
 
 		if( bl->program[bl->ip].type == INST_PUSH || bl->program[bl->ip].type == INST_DUP || bl->program[bl->ip].type == INST_JMP )
-			fprintf(stream, " %lu", bl->program[bl->ip].operand);
+			fprintf(stream, " %lu", bl->program[bl->ip].operand.u64);
 
 		fprintf(stream, " (sp: 0x%03lX)\n", bl->sp);
 }
 
 Trap blvm_execute_inst(Blvm *bl) {
-	if( bl->ip < 0 || bl->ip >= bl->program_size )
+	if( bl->ip >= bl->program_size )
 		return TRAP_ILLEGAL_INST_ACCESS;
 
 	Inst inst = bl->program[bl->ip];
@@ -125,14 +125,14 @@ Trap blvm_execute_inst(Blvm *bl) {
 			break;
 
 		case INST_DUP:
-			if( bl->sp - inst.operand <= 0 )
+			if( bl->sp - inst.operand.u64 <= 0 )
 				return TRAP_STACK_UNDERFLOW;
-			if( inst.operand < 0 )
-				return TRAP_ILLEGAL_OPERAND;
+			/*if( inst.operand < 0 )*/
+				/*return TRAP_ILLEGAL_OPERAND;*/
 			if( bl->sp >= BLISP_STACK_CAPACITY )
 				return TRAP_STACK_OVERFLOW;
 
-			bl->stack[bl->sp] = bl->stack[bl->sp - 1 - inst.operand];
+			bl->stack[bl->sp] = bl->stack[bl->sp - 1 - inst.operand.u64];
 			bl->sp += 1;
 			bl->ip += 1;
 			break;
@@ -141,7 +141,7 @@ Trap blvm_execute_inst(Blvm *bl) {
 			if( bl->sp < 2 )
 				return TRAP_STACK_UNDERFLOW;
 
-			bl->stack[bl->sp - 2] += bl->stack[bl->sp - 1];
+			bl->stack[bl->sp - 2].u64 += bl->stack[bl->sp - 1].u64;
 			bl->sp -= 1;
 			bl->ip += 1;
 			break;
@@ -150,7 +150,7 @@ Trap blvm_execute_inst(Blvm *bl) {
 			if( bl->sp < 2 )
 				return TRAP_STACK_UNDERFLOW;
 
-			bl->stack[bl->sp - 2] -= bl->stack[bl->sp - 1];
+			bl->stack[bl->sp - 2].u64 -= bl->stack[bl->sp - 1].u64;
 			bl->sp -= 1;
 			bl->ip += 1;
 			break;
@@ -159,7 +159,7 @@ Trap blvm_execute_inst(Blvm *bl) {
 			if( bl->sp < 2 )
 				return TRAP_STACK_UNDERFLOW;
 
-			bl->stack[bl->sp - 2] *= bl->stack[bl->sp - 1];
+			bl->stack[bl->sp - 2].u64 *= bl->stack[bl->sp - 1].u64;
 			bl->sp -= 1;
 			bl->ip += 1;
 			break;
@@ -168,24 +168,63 @@ Trap blvm_execute_inst(Blvm *bl) {
 			if( bl->sp < 2 )
 				return TRAP_STACK_UNDERFLOW;
 
-			if( bl->stack[bl->sp - 1] == 0 )
+			if( bl->stack[bl->sp - 1].u64 == 0 )
 				return TRAP_DIV_BY_ZERO;
 
-			bl->stack[bl->sp - 2] /= bl->stack[bl->sp - 1];
+			bl->stack[bl->sp - 2].u64 /= bl->stack[bl->sp - 1].u64;
+			bl->sp -= 1;
+			bl->ip += 1;
+			break;
+
+		case INST_ADDF:
+			if( bl->sp < 2 )
+				return TRAP_STACK_UNDERFLOW;
+
+			bl->stack[bl->sp - 2].f64 += bl->stack[bl->sp - 1].f64;
+			bl->sp -= 1;
+			bl->ip += 1;
+			break;
+
+		case INST_SUBF:
+			if( bl->sp < 2 )
+				return TRAP_STACK_UNDERFLOW;
+
+			bl->stack[bl->sp - 2].f64 -= bl->stack[bl->sp - 1].f64;
+			bl->sp -= 1;
+			bl->ip += 1;
+			break;
+
+		case INST_MULF:
+			if( bl->sp < 2 )
+				return TRAP_STACK_UNDERFLOW;
+
+			bl->stack[bl->sp - 2].f64 *= bl->stack[bl->sp - 1].f64;
+			bl->sp -= 1;
+			bl->ip += 1;
+			break;
+
+		case INST_DIVF:
+			if( bl->sp < 2 )
+				return TRAP_STACK_UNDERFLOW;
+
+			if( bl->stack[bl->sp - 1].f64 == 0.0 )
+				return TRAP_DIV_BY_ZERO;
+
+			bl->stack[bl->sp - 2].f64 /= bl->stack[bl->sp - 1].f64;
 			bl->sp -= 1;
 			bl->ip += 1;
 			break;
 
 		case INST_JMP:
-			bl->ip = inst.operand;
+			bl->ip = inst.operand.u64;
 			break;
 
 		case INST_JIF:
 			if( bl->sp < 1 )
 				return TRAP_STACK_UNDERFLOW;
 
-			if( bl->stack[bl->sp - 1] ) {
-				bl->ip = inst.operand;
+			if( bl->stack[bl->sp - 1].u64 ) {
+				bl->ip = inst.operand.u64;
 				bl->sp -= 1;
 			} else {
 				bl->ip += 1;
@@ -197,7 +236,7 @@ Trap blvm_execute_inst(Blvm *bl) {
 			if( bl->sp < 2 )
 				return TRAP_STACK_UNDERFLOW;
 
-			bl->stack[bl->sp - 2] = bl->stack[bl->sp - 1] == bl->stack[bl->sp - 2];
+			bl->stack[bl->sp - 2].u64 = bl->stack[bl->sp - 1].u64 == bl->stack[bl->sp - 2].u64;
 			bl->sp -= 1;
 			bl->ip += 1;
 			break;
@@ -211,7 +250,7 @@ Trap blvm_execute_inst(Blvm *bl) {
 			if( bl->sp < 1 )
 				return TRAP_STACK_UNDERFLOW;
 
-			printf("%ld", bl->stack[bl->sp - 1]);
+			printf("%ld", bl->stack[bl->sp - 1].u64);
 			bl->ip += 1;
 			break;
 

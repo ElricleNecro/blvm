@@ -1,0 +1,6 @@
+push 001
+push 002
+push 003
+add
+add
+halt

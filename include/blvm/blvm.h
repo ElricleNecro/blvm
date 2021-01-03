@@ -17,18 +17,18 @@
 
 typedef struct blvm_t {
 	Word stack[BLISP_STACK_CAPACITY];
-	Word sp;
+	uint64_t sp;
 
 	Inst *program;
-	Word program_size;
-	Word ip;
+	uint64_t program_size;
+	uint64_t ip;
 
 	bool halt;
 } Blvm;
 
 void blvm_clean(Blvm *bl);
 
-void blvm_load_program_from_memory(Blvm *bl, const Inst *program, Word size);
+void blvm_load_program_from_memory(Blvm *bl, const Inst *program, size_t size);
 void blvm_load_program_from_file(Blvm *bl, const char *fpath);
 void blvm_save_program_to_file(Blvm bl, const char *fpath);
 

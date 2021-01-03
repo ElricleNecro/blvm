@@ -8,11 +8,11 @@
 
 typedef struct label_t {
 	StringView name;
-	Word addr;
+	uint64_t addr;
 } Label;
 
 typedef struct unresolved_t {
-	Word addr;
+	uint64_t addr;
 	StringView name;
 } Unresolved;
 
@@ -24,26 +24,47 @@ typedef struct records_t {
 	size_t jmps_size;
 } Records;
 
-Word records_find_label(Records records, StringView name) {
+uint64_t records_find_label(Records records, StringView name) {
 	for(size_t idx=0; idx < records.labels_size; idx++)
 		if( stringview_eq(records.labels[idx].name, name) )
 			return records.labels[idx].addr;
 
-	return -1;
+	return UINT64_MAX;
 }
 
-void records_push_label(Records *records, StringView name, Word addr) {
+void records_push_label(Records *records, StringView name, uint64_t addr) {
 	records->labels = realloc(records->labels, (records->labels_size + 1) * sizeof(struct label_t));
 	records->labels[records->labels_size++] = (Label){.name = name, .addr = addr};
 }
 
-void records_push_unresolved(Records *records, Word addr, StringView name) {
+void records_push_unresolved(Records *records, uint64_t addr, StringView name) {
 	records->jmps = realloc(records->jmps, (records->jmps_size + 1) * sizeof(struct unresolved_t));
 	records->jmps[records->jmps_size++] = (Unresolved){.addr = addr, .name = name};
 }
 
 void records_free(Records *records) {
 	free(records->labels), records->labels = NULL, records->labels_size = 0;
+}
+
+Word stringview_number_litteral(StringView sv) {
+	Word result = {0};
+	char *endptr = NULL;
+
+	if( *sv.data == '-' ){
+		result.i64 = strtoul(sv.data, &endptr, 0);
+	} else {
+		result.u64 = strtoul(sv.data, &endptr, 0);
+	}
+
+	if( (size_t)(endptr - sv.data) != sv.count )
+		result.f64 = strtod(sv.data, &endptr);
+
+	if( (size_t)(endptr - sv.data) != sv.count ) {
+		fprintf(stderr, "ERROR: unrecognised number type: '%.*s', parsing stopped at character: '%c'.\n", (int)sv.count, sv.data, *endptr);
+		exit(EXIT_FAILURE);
+	}
+
+	return result;
 }
 
 void translate_source(Blvm *bl, StringView src, Records *records) {
@@ -74,9 +95,8 @@ void translate_source(Blvm *bl, StringView src, Records *records) {
 
 		StringView operand = stringview_trim(stringview_split(&line, '#'));
 		if( stringview_eq(name, cstr_as_stringview("push")) ) {
-			int value = stringview_to_int(operand);
 			inst.type = INST_PUSH;
-			inst.operand = value;
+			inst.operand = stringview_number_litteral(operand);
 		} else if( stringview_eq(name, cstr_as_stringview("pop")) ) {
 			inst.type = INST_POP;
 		} else if( stringview_eq(name, cstr_as_stringview("swap")) ) {
@@ -84,7 +104,7 @@ void translate_source(Blvm *bl, StringView src, Records *records) {
 		} else if( stringview_eq(name, cstr_as_stringview("dup")) ) {
 			int value = stringview_to_int(operand);
 			inst.type = INST_DUP;
-			inst.operand = value;
+			inst.operand.u64 = value;
 		} else if( stringview_eq(name, cstr_as_stringview("add")) ) {
 			inst.type = INST_ADD;
 		} else if( stringview_eq(name, cstr_as_stringview("sub")) ) {
@@ -93,17 +113,25 @@ void translate_source(Blvm *bl, StringView src, Records *records) {
 			inst.type = INST_MUL;
 		} else if( stringview_eq(name, cstr_as_stringview("div")) ) {
 			inst.type = INST_DIV;
+		} else if( stringview_eq(name, cstr_as_stringview("addf")) ) {
+			inst.type = INST_ADDF;
+		} else if( stringview_eq(name, cstr_as_stringview("subf")) ) {
+			inst.type = INST_SUBF;
+		} else if( stringview_eq(name, cstr_as_stringview("mulf")) ) {
+			inst.type = INST_MULF;
+		} else if( stringview_eq(name, cstr_as_stringview("divf")) ) {
+			inst.type = INST_DIVF;
 		} else if( stringview_eq(name, cstr_as_stringview("jmp")) ) {
 			inst.type = INST_JMP;
 			if( operand.count > 0 && isdigit(*operand.data) ) {
-				inst.operand = stringview_to_int(operand);
+				inst.operand.u64 = stringview_to_int(operand);
 			} else {
 				records_push_unresolved(records, bl->program_size, operand);
 			}
 		} else if( stringview_eq(name, cstr_as_stringview("jif")) ) {
 			inst.type = INST_JIF;
 			if( operand.count > 0 && isdigit(*operand.data) ) {
-				inst.operand = stringview_to_int(operand);
+				inst.operand.u64 = stringview_to_int(operand);
 			} else {
 				records_push_unresolved(records, bl->program_size, operand);
 			}
@@ -125,9 +153,9 @@ void translate_source(Blvm *bl, StringView src, Records *records) {
 	}
 
 	for(size_t idx = 0; idx < records->jmps_size; idx++) {
-		bl->program[records->jmps[idx].addr].operand = records_find_label(*records, records->jmps[idx].name);
+		bl->program[records->jmps[idx].addr].operand.u64 = records_find_label(*records, records->jmps[idx].name);
 
-		if( bl->program[records->jmps[idx].addr].operand < 0 ) {
+		if( bl->program[records->jmps[idx].addr].operand.u64 == UINT64_MAX ) {
 			fprintf(stderr, "ERROR: undefined label '%.*s'.\n", (int)records->jmps[idx].name.count, records->jmps[idx].name.data);
 			exit(EXIT_FAILURE);
 		}
