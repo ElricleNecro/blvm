@@ -113,6 +113,17 @@ Trap blvm_execute_inst(Blvm *bl) {
 			bl->ip += 1;
 			break;
 
+		case INST_SWAP:
+			if( bl->sp < 2 )
+				return TRAP_STACK_UNDERFLOW;
+
+			Word tmp = bl->stack[bl->sp - 1];
+			bl->stack[bl->sp - 1] = bl->stack[bl->sp - 2];
+			bl->stack[bl->sp - 2] = tmp;
+
+			bl->ip += 1;
+			break;
+
 		case INST_DUP:
 			if( bl->sp - inst.operand <= 0 )
 				return TRAP_STACK_UNDERFLOW;

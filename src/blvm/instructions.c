@@ -9,6 +9,8 @@ const char* insttype_as_cstr(InstType type) {
 			return "push";
 		case INST_POP:
 			return "pop";
+		case INST_SWAP:
+			return "swap";
 		case INST_DUP:
 			return "dup";
 

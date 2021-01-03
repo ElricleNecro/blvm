@@ -10,6 +10,7 @@ typedef enum insttype_e {
 
 	INST_PUSH,
 	INST_POP,
+	INST_SWAP,
 	INST_DUP,
 
 	INST_ADD,
@@ -36,7 +37,8 @@ typedef struct inst_t {
 #define MAKE_INST_NOP {.type = INST_NOP}
 
 #define MAKE_INST_PUSH(value) {.type = INST_PUSH, .operand = (value)}
-#define MAKE_INST_POP {.type = INST_POP}
+#define MAKE_INST_POP  {.type = INST_POP}
+#define MAKE_INST_SWAP {.type = INST_SWAP}
 #define MAKE_INST_DUP(addr) {.type = INST_DUP, .operand = (addr)}
 
 #define MAKE_INST_ADD {.type = INST_ADD}
