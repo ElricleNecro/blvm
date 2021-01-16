@@ -251,6 +251,14 @@ Trap blvm_execute_inst(Blvm *bl) {
 			bl->ip += 1;
 			break;
 
+		case INST_NOT:
+			if( bl->sp < 1 )
+				return TRAP_STACK_UNDERFLOW;
+
+			bl->stack[bl->sp - 1].u64 = ! bl->stack[bl->sp - 1].u64;
+			bl->ip += 1;
+			break;
+
 		case INST_HALT:
 			bl->halt = true;
 			bl->ip += 1;
