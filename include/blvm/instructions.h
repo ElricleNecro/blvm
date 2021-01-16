@@ -29,6 +29,7 @@ typedef enum insttype_e {
 
 	INST_EQ,
 	INST_GT,
+	INST_GEF,
 	INST_NOT,
 
 	INST_HALT,
@@ -66,6 +67,7 @@ extern const bool inst_required_operand[];
 
 #define MAKE_INST_EQ {.type = INST_EQ}
 #define MAKE_INST_GT {.type = INST_GT}
+#define MAKE_INST_GEF {.type = INST_GEF}
 #define MAKE_INST_NOT {.type = INST_NOT}
 
 #define MAKE_INST_HALT {.type = INST_HALT}

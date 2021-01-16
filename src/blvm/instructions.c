@@ -23,6 +23,7 @@ const char *inst_names[] = {
 
 	[INST_EQ]          = "eq",
 	[INST_GT]          = "gt",
+	[INST_GEF]         = "gef",
 	[INST_NOT]         = "not",
 
 	[INST_HALT]        = "halt",
@@ -53,6 +54,7 @@ const bool inst_required_operand[] = {
 
 	[INST_EQ]          = false,
 	[INST_GT]          = false,
+	[INST_GEF]         = false,
 	[INST_NOT]         = false,
 
 	[INST_HALT]        = false,

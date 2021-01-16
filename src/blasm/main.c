@@ -140,6 +140,8 @@ void translate_source(Blvm *bl, StringView src, Records *records) {
 			inst.type = INST_EQ;
 		} else if( stringview_eq(name, cstr_as_stringview("gt")) ) {
 			inst.type = INST_GT;
+		} else if( stringview_eq(name, cstr_as_stringview("gef")) ) {
+			inst.type = INST_GEF;
 		} else if( stringview_eq(name, cstr_as_stringview("not")) ) {
 			inst.type = INST_NOT;
 		} else if( stringview_eq(name, cstr_as_stringview("halt")) ) {
