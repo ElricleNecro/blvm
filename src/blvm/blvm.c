@@ -226,10 +226,11 @@ Trap blvm_execute_inst(Blvm *bl) {
 
 			if( bl->stack[bl->sp - 1].u64 ) {
 				bl->ip = inst.operand.u64;
-				bl->sp -= 1;
 			} else {
 				bl->ip += 1;
 			}
+
+			bl->sp -= 1;
 
 			break;
 
