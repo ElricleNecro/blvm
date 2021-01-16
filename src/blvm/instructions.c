@@ -34,7 +34,7 @@ const bool inst_required_operand[] = {
 
 	[INST_PUSH]        = true,
 	[INST_POP]         = false,
-	[INST_SWAP]        = false,
+	[INST_SWAP]        = true,
 	[INST_DUP]         = true,
 
 	[INST_ADD]         = false,

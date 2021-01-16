@@ -114,12 +114,15 @@ Trap blvm_execute_inst(Blvm *bl) {
 			break;
 
 		case INST_SWAP:
-			if( bl->sp < 2 )
+			if( inst.operand.u64 >= bl->sp )
 				return TRAP_STACK_UNDERFLOW;
 
-			Word tmp = bl->stack[bl->sp - 1];
-			bl->stack[bl->sp - 1] = bl->stack[bl->sp - 2];
-			bl->stack[bl->sp - 2] = tmp;
+			const uint64_t a = bl->sp - 1;
+			const uint64_t b = bl->sp - 1 - inst.operand.u64;
+
+			Word tmp = bl->stack[a];
+			bl->stack[a] = bl->stack[b];
+			bl->stack[b] = tmp;
 
 			bl->ip += 1;
 			break;

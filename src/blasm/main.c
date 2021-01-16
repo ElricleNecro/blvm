@@ -101,6 +101,7 @@ void translate_source(Blvm *bl, StringView src, Records *records) {
 			inst.type = INST_POP;
 		} else if( stringview_eq(name, cstr_as_stringview("swap")) ) {
 			inst.type = INST_SWAP;
+			inst.operand.u64 = stringview_to_int(operand);
 		} else if( stringview_eq(name, cstr_as_stringview("dup")) ) {
 			int value = stringview_to_int(operand);
 			inst.type = INST_DUP;
