@@ -130,8 +130,6 @@ Trap blvm_execute_inst(Blvm *bl) {
 		case INST_DUP:
 			if( bl->sp - inst.operand.u64 <= 0 )
 				return TRAP_STACK_UNDERFLOW;
-			/*if( inst.operand < 0 )*/
-				/*return TRAP_ILLEGAL_OPERAND;*/
 			if( bl->sp >= BLISP_STACK_CAPACITY )
 				return TRAP_STACK_OVERFLOW;
 
