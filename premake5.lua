@@ -13,7 +13,7 @@ project("ParseArgsC")
 	kind("SharedLib")
 
 	location("build/")
-	targetdir("build/%{prj.name}/lib")
+	targetdir("build/%{cfg.buildcfg}/lib")
 
 	includedirs {
 		".submodule/ParseArgsC/include/",
