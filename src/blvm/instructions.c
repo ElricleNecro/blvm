@@ -21,6 +21,7 @@ const char *inst_names[] = {
 	[INST_JMP]         = "jmp",
 	[INST_JIF]         = "jif",
 
+	[INST_CALL]        = "call",
 	[INST_RET]         = "ret",
 
 	[INST_EQ]          = "eq",
@@ -54,6 +55,7 @@ const bool inst_required_operand[] = {
 	[INST_JMP]         = true,
 	[INST_JIF]         = true,
 
+	[INST_CALL]        = true,
 	[INST_RET]         = false,
 
 	[INST_EQ]          = false,
@@ -103,6 +105,8 @@ const char* insttype_as_cstr(InstType type) {
 		case INST_JIF:
 			return "jif";
 
+		case INST_CALL:
+			return "call";
 		case INST_RET:
 			return "ret";
 

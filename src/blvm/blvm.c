@@ -234,6 +234,15 @@ Trap blvm_execute_inst(Blvm *bl) {
 
 			break;
 
+		case INST_CALL:
+			if( bl->sp >= BLISP_STACK_CAPACITY )
+				return TRAP_STACK_OVERFLOW;
+
+			bl->stack[bl->sp++].u64 = bl->ip;
+			bl->ip = inst.operand.u64;
+
+			break;
+
 		case INST_RET:
 			if( bl->sp < 1 )
 				return TRAP_STACK_UNDERFLOW;

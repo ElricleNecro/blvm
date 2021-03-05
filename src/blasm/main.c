@@ -136,6 +136,13 @@ void translate_source(Blvm *bl, StringView src, Records *records) {
 			} else {
 				records_push_unresolved(records, bl->program_size, operand);
 			}
+		} else if( stringview_eq(name, cstr_as_stringview("call")) ) {
+			inst.type = INST_CALL;
+			if( operand.count > 0 && isdigit(*operand.data) ) {
+				inst.operand.u64 = stringview_to_int(operand);
+			} else {
+				records_push_unresolved(records, bl->program_size, operand);
+			}
 		} else if( stringview_eq(name, cstr_as_stringview("ret")) ) {
 			inst.type = INST_RET;
 		} else if( stringview_eq(name, cstr_as_stringview("eq")) ) {
