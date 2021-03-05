@@ -27,6 +27,8 @@ typedef enum insttype_e {
 	INST_JMP,
 	INST_JIF,
 
+	INST_RET,
+
 	INST_EQ,
 	INST_GT,
 	INST_GEF,
