@@ -296,7 +296,7 @@ Trap blvm_execute_inst(Blvm *bl) {
 			if( bl->sp < 1 )
 				return TRAP_STACK_UNDERFLOW;
 
-			printf("%ld", bl->stack[bl->sp - 1].u64);
+			printf("%ld %ld %f %p\n", bl->stack[bl->sp - 1].u64, bl->stack[bl->sp - 1].i64, bl->stack[bl->sp - 1].f64, bl->stack[bl->sp - 1].ptr);
 			bl->ip += 1;
 			break;
 
