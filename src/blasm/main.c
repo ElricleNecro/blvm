@@ -155,7 +155,7 @@ void translate_source(Blvm *bl, StringView src, Records *records) {
 			inst.type = INST_NOT;
 		} else if( stringview_eq(name, cstr_as_stringview("halt")) ) {
 			inst.type = INST_HALT;
-		} else if( stringview_eq(name, cstr_as_stringview("debug")) ) {
+		} else if( stringview_eq(name, cstr_as_stringview("print_debug")) ) {
 			inst.type = INST_PRINT_DEBUG;
 		} else {
 			fprintf(stderr, "ERROR: unknown instruction '%.*s'\n", (int)name.count, name.data);
