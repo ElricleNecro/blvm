@@ -8,6 +8,9 @@ workspace "BLVM"
 
 		warnings "Extra"
 
+	configurations "Release"
+		optimize "Full"
+
 project("ParseArgsC")
 	language("C")
 	kind("SharedLib")
