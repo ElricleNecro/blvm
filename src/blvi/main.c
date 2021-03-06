@@ -5,6 +5,65 @@
 
 #include "blvm/blvm.h"
 
+Trap blvm_alloc(Blvm *bl) {
+	if( bl->sp < 1 )
+		return TRAP_STACK_UNDERFLOW;
+
+	bl->stack[bl->sp - 1].ptr = malloc(bl->stack[bl->sp - 1].u64);
+
+	return TRAP_OK;
+}
+
+Trap blvm_free(Blvm *bl) {
+	if( bl->sp < 1 )
+		return TRAP_STACK_UNDERFLOW;
+
+	free(bl->stack[bl->sp - 1].ptr);
+	bl->sp -= 1;
+
+	return TRAP_OK;
+}
+
+Trap blvm_print_f64(Blvm *bl) {
+	if( bl->sp < 1 )
+		return TRAP_STACK_UNDERFLOW;
+
+	printf("%lf\n", bl->stack[bl->sp - 1].f64);
+	bl->sp -= 1;
+
+	return TRAP_OK;
+}
+
+Trap blvm_print_i64(Blvm *bl) {
+	if( bl->sp < 1 )
+		return TRAP_STACK_UNDERFLOW;
+
+	printf("%ld\n", bl->stack[bl->sp - 1].i64);
+	bl->sp -= 1;
+
+	return TRAP_OK;
+}
+
+Trap blvm_print_u64(Blvm *bl) {
+	if( bl->sp < 1 )
+		return TRAP_STACK_UNDERFLOW;
+
+	printf("%lu\n", bl->stack[bl->sp - 1].u64);
+	bl->sp -= 1;
+
+	return TRAP_OK;
+}
+
+Trap blvm_print_ptr(Blvm *bl) {
+	if( bl->sp < 1 )
+		return TRAP_STACK_UNDERFLOW;
+
+	printf("%p\n", bl->stack[bl->sp - 1].ptr);
+	bl->sp -= 1;
+
+	return TRAP_OK;
+}
+
 int main(int argc, const char *argv[]) {
 	Args *args = Args_New();
 	Args_Error err;
@@ -27,16 +86,48 @@ int main(int argc, const char *argv[]) {
 	const char *program = args->rest->opt;
 
 	Blvm bl = {0};
+	Trap exc = TRAP_OK;
 
 	blvm_load_program_from_file(&bl, program);
 
-	Trap exc = blvm_execute_program(&bl, limit);
-	if( exc != TRAP_OK ) {
+	if( (exc = blvm_push_native(&bl, blvm_alloc)) != TRAP_OK ) {
+		fprintf(stderr, "An error occured: %s.\n", trap_as_cstr(exc));
+		return EXIT_FAILURE;
+	}
+
+	if( (exc = blvm_push_native(&bl, blvm_free)) != TRAP_OK ) {
+		fprintf(stderr, "An error occured: %s.\n", trap_as_cstr(exc));
+		return EXIT_FAILURE;
+	}
+
+	if( (exc = blvm_push_native(&bl, blvm_print_f64)) != TRAP_OK ) {
+		fprintf(stderr, "An error occured: %s.\n", trap_as_cstr(exc));
+		return EXIT_FAILURE;
+	}
+
+	if( (exc = blvm_push_native(&bl, blvm_print_i64)) != TRAP_OK ) {
+		fprintf(stderr, "An error occured: %s.\n", trap_as_cstr(exc));
+		return EXIT_FAILURE;
+	}
+
+	if( (exc = blvm_push_native(&bl, blvm_print_u64)) != TRAP_OK ) {
+		fprintf(stderr, "An error occured: %s.\n", trap_as_cstr(exc));
+		return EXIT_FAILURE;
+	}
+
+	if( (exc = blvm_push_native(&bl, blvm_print_ptr)) != TRAP_OK ) {
+		fprintf(stderr, "An error occured: %s.\n", trap_as_cstr(exc));
+		return EXIT_FAILURE;
+	}
+
+	if( (exc = blvm_execute_program(&bl, limit)) != TRAP_OK ) {
 		fprintf(stderr, "An error occured: %s.\n", trap_as_cstr(exc));
 		return EXIT_FAILURE;
 	}
 
 	blvm_clean(&bl);
+
+	Args_Free(args);
 
 	return EXIT_SUCCESS;
 }

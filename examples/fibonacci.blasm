@@ -4,6 +4,8 @@
 loop:   dup 1 # To keep the full suit in stack.
 	dup 1
 	add
+	dup 0
+	native 4
 	jmp loop
 # This will never be reached.
 	halt

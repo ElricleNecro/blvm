@@ -8,6 +8,8 @@ const char* trap_as_cstr(Trap trap) {
 			return "STACK_OVERFLOW";
 		case TRAP_STACK_UNDERFLOW:
 			return "STACK_UNDERFLOW";
+		case TRAP_NATIVES_OVERFLOW:
+			return "NATIVES_OVERFLOW";
 		case TRAP_ILLEGAL_INST:
 			return "ILLEGAL_INST";
 		case TRAP_ILLEGAL_OPERAND:

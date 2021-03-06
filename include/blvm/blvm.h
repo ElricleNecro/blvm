@@ -15,6 +15,9 @@
 #include "blvm/errors.h"
 #include "blvm/instructions.h"
 
+struct blvm_t;
+typedef Trap (*NativeFunctionCall)(struct blvm_t*);
+
 typedef struct blvm_t {
 	Word stack[BLISP_STACK_CAPACITY];
 	uint64_t sp;
@@ -22,6 +25,9 @@ typedef struct blvm_t {
 	Inst *program;
 	uint64_t program_size;
 	uint64_t ip;
+
+	NativeFunctionCall natives[BLISP_NATIVES_CAPACITY];
+	size_t ns;
 
 	bool halt;
 } Blvm;
@@ -31,6 +37,8 @@ void blvm_clean(Blvm *bl);
 void blvm_load_program_from_memory(Blvm *bl, const Inst *program, size_t size);
 void blvm_load_program_from_file(Blvm *bl, const char *fpath);
 void blvm_save_program_to_file(Blvm bl, const char *fpath);
+
+Trap blvm_push_native(Blvm *bl, NativeFunctionCall func);
 
 void blvm_dump_stack(const Blvm *bl, FILE *stream);
 void blvm_show_state(const Blvm *bl, FILE *stream);

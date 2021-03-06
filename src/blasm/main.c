@@ -44,6 +44,7 @@ void records_push_unresolved(Records *records, uint64_t addr, StringView name) {
 
 void records_free(Records *records) {
 	free(records->labels), records->labels = NULL, records->labels_size = 0;
+	free(records->jmps), records->jmps = NULL, records->jmps_size = 0;
 }
 
 Word stringview_number_litteral(StringView sv) {
@@ -80,7 +81,7 @@ void translate_source(Blvm *bl, StringView src, Records *records) {
 
 		line = stringview_trim(line);
 
-		Inst inst;
+		Inst inst = {0};
 		StringView name = stringview_split(&line, ' ');
 
 		if( stringview_endwith(name, ':') ) {
@@ -145,6 +146,13 @@ void translate_source(Blvm *bl, StringView src, Records *records) {
 			}
 		} else if( stringview_eq(name, cstr_as_stringview("ret")) ) {
 			inst.type = INST_RET;
+		} else if( stringview_eq(name, cstr_as_stringview("native")) ) {
+			inst.type = INST_NATIVE;
+			if( operand.count > 0 && isdigit(*operand.data) ) {
+				inst.operand.u64 = stringview_to_int(operand);
+			} else {
+				records_push_unresolved(records, bl->program_size, operand);
+			}
 		} else if( stringview_eq(name, cstr_as_stringview("eq")) ) {
 			inst.type = INST_EQ;
 		} else if( stringview_eq(name, cstr_as_stringview("gt")) ) {
@@ -251,6 +259,8 @@ int main(int argc, const char *argv[]) {
 	blvm_clean(&bl);
 	records_free(&records);
 	free(src.data);
+
+	Args_Free(args);
 
 	return EXIT_SUCCESS;
 }

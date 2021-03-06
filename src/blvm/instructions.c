@@ -23,6 +23,7 @@ const char *inst_names[] = {
 
 	[INST_CALL]        = "call",
 	[INST_RET]         = "ret",
+	[INST_NATIVE]      = "native",
 
 	[INST_EQ]          = "eq",
 	[INST_GT]          = "gt",
@@ -57,6 +58,7 @@ const bool inst_required_operand[] = {
 
 	[INST_CALL]        = true,
 	[INST_RET]         = false,
+	[INST_NATIVE]      = true,
 
 	[INST_EQ]          = false,
 	[INST_GT]          = false,
@@ -109,6 +111,8 @@ const char* insttype_as_cstr(InstType type) {
 			return "call";
 		case INST_RET:
 			return "ret";
+		case INST_NATIVE:
+			return "native";
 
 		case INST_EQ:
 			return "eq";

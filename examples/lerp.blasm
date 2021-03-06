@@ -31,14 +31,14 @@ main:
 	push 0.0
 
 	call lerp
-	print_debug
+	native 2
 
 	push 69.0
 	push 420.0
 	push 1.0
 
 	call lerp
-	print_debug
+	native 2
 
 
 	push 69.0
@@ -46,6 +46,6 @@ main:
 	push 0.5
 
 	call lerp
-	print_debug
+	native 2
 
 	halt

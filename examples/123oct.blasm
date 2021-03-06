@@ -3,4 +3,5 @@ push 002
 push 003
 add
 add
+native 3
 halt

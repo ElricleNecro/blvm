@@ -68,6 +68,15 @@ void blvm_save_program_to_file(Blvm bl, const char *fpath) {
 	fclose(file);
 }
 
+Trap blvm_push_native(Blvm *bl, NativeFunctionCall func) {
+	if( bl->ns >= BLISP_NATIVES_CAPACITY )
+		return TRAP_NATIVES_OVERFLOW;
+
+	bl->natives[bl->ns++] = func;
+
+	return TRAP_OK;
+}
+
 void blvm_dump_stack(const Blvm *bl, FILE *stream) {
 	fprintf(stream, "Stack:\n");
 	if( bl->sp > 0) {
@@ -249,6 +258,15 @@ Trap blvm_execute_inst(Blvm *bl) {
 
 			bl->ip = bl->stack[bl->sp - 1].u64;
 			bl->sp -= 1;
+
+			break;
+
+		case INST_NATIVE:
+			if( inst.operand.u64 > bl->ns )
+				return TRAP_ILLEGAL_OPERAND;
+
+			bl->natives[inst.operand.u64](bl);
+			bl->ip += 1;
 
 			break;
 

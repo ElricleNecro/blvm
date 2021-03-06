@@ -29,6 +29,7 @@ typedef enum insttype_e {
 
 	INST_CALL,
 	INST_RET,
+	INST_NATIVE,
 
 	INST_EQ,
 	INST_GT,

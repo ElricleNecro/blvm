@@ -3,4 +3,5 @@ push 0x02
 push 0x03
 add
 add
+native 3
 halt
