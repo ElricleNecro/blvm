@@ -15,7 +15,7 @@ build:
     - apt update && apt -y install make
   script:
     - .bin/premake5 gmake2
-    - make
+    - make config=release
   artifacts:
     paths:
       - build/Debug/*
