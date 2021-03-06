@@ -5,25 +5,25 @@
 # a
 # --
 # a + (b - a) * t
-lerpf:
-	dup 3
-	dup 3
-	dup 1
+lerpf:			# [a, b, t, $RET]
+	dup 3		# [a, b, t, $RET, a]
+	dup 3		# [a, b, t, $RET, a, b]
+	dup 1		# [a, b, t, $RET, a, b, a]
 
-	subf
-	dup 3
-	mulf
-	addf
+	subf		# [a, b, t, $RET, a, b - a]
+	dup 3		# [a, b, t, $RET, a, b - a, t]
+	mulf		# [a, b, t, $RET, a, (b - a) * t]
+	addf		# [a, b, t, $RET, a + (b - a) * t]
 
 	# Clean up the stack
-	swap 2
-	pop
-	swap 2
-	pop
-	swap 2
-	pop
+	swap 2		# [a, b, a + (b - a) * t, $RET, t]
+	pop		# [a, b, a + (b - a) * t, $RET]
+	swap 2		# [a, $RET, a + (b - a) * t, b]
+	pop		# [a, $RET, a + (b - a) * t]
+	swap 2		# [a + (b - a) * t, $RET, a]
+	pop		# [a + (b - a) * t, $RET]
 
-	ret
+	ret		# [a + (b - a) * t]
 
 main:
 	push 69.0	# a: [69.0]
