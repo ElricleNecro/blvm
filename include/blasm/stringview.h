@@ -15,6 +15,7 @@ StringView stringview_ltrim(StringView sv);
 StringView stringview_rtrim(StringView sv);
 StringView stringview_trim(StringView sv);
 StringView stringview_split(StringView *sv, const char delim);
+StringView stringview_split_on_spaces(StringView *sv);
 bool stringview_eq(StringView a, StringView b);
 bool stringview_endwith(StringView sv, const char end);
 int stringview_to_int(StringView sv);

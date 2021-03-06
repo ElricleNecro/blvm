@@ -56,6 +56,27 @@ StringView stringview_split(StringView *sv, const char delim) {
 	return result;
 }
 
+StringView stringview_split_on_spaces(StringView *sv) {
+	size_t i =0;
+	while( i < sv->count && ! isspace(sv->data[i]) )
+		i += 1;
+
+	StringView result = {
+		.count = i,
+		.data = sv->data,
+	};
+
+	if( i < sv->count ) {
+		sv->count -= i + 1;
+		sv->data += i + 1;
+	} else {
+		sv->count -= i;
+		sv->data += i;
+	}
+
+	return result;
+}
+
 bool stringview_eq(StringView a, StringView b) {
 	if( a.count != b.count )
 		return false;
