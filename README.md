@@ -1,4 +1,8 @@
-# blvm
+# blvm [![pipeline status](https://gitlab.com/ElricleNecro/blvm/badges/master/pipeline.svg)](https://gitlab.com/ElricleNecro/blvm/-/commits/master)
+
+## Licensing:
+[`GPL-v3`](LICENSE) for programs
+[`LGPL-v3`](lib.LICENSE) for `blvm` library.
 
 ## How to compile:
 
