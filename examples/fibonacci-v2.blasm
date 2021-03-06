@@ -1,0 +1,29 @@
+	jmp main
+main:
+	push 0		# F_0
+	push 1		# F_1
+	push 100	# Number of iterations
+
+loop:			# [0, 1, 100]
+	swap 2		# [100, 1, 0]
+
+	dup 0		# [100, 1, 0, 0]
+	native 4	# [100, 1, 0]
+
+	dup 1		# [100, 1, 0, 1]
+	add		# [100, 1, 1]
+
+	swap 2		# [1, 1, 100]
+	push 1		# [1, 1, 100, 1]
+	sub		# [1, 1, 99]
+
+	swap 2		# [99, 1, 1]
+	swap 1		# [99, 1, 1]
+	swap 2		# [1, 1, 99]
+
+	push 0		# [1, 1, 99, 0]
+	dup 1		# [1, 1, 99, 0, 99]
+	gt		# [1, 1, 99, 1]
+	jif loop	# [1, 1, 99]
+
+	halt
