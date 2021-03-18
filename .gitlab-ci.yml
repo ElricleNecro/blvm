@@ -16,9 +16,11 @@ build:
   script:
     - .bin/premake5 gmake2
     - make config=release
+    - make -C examples config=release
   artifacts:
     paths:
-      - build/Debug/*
+      - build/Release/bin
+      - build/Release/lib
       # depending on your build setup it's most likely a good idea to cache outputs to reduce the build time
       # cache:
       #   paths:

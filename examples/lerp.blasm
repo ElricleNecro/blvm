@@ -1,53 +1,55 @@
+%include "natives.blhasm"
+
 	jmp main
 
-# t
-# b
-# a
-# --
-# a + (b - a) * t
-lerpf:			# [a, b, t, $RET]
-	dup 3		# [a, b, t, $RET, a]
-	dup 3		# [a, b, t, $RET, a, b]
-	dup 1		# [a, b, t, $RET, a, b, a]
+; t
+; b
+; a
+; --
+; a + (b - a) * t
+lerpf:			; [a, b, t, $RET]
+	dup 3		; [a, b, t, $RET, a]
+	dup 3		; [a, b, t, $RET, a, b]
+	dup 1		; [a, b, t, $RET, a, b, a]
 
-	subf		# [a, b, t, $RET, a, b - a]
-	dup 3		# [a, b, t, $RET, a, b - a, t]
-	mulf		# [a, b, t, $RET, a, (b - a) * t]
-	addf		# [a, b, t, $RET, a + (b - a) * t]
+	subf		; [a, b, t, $RET, a, b - a]
+	dup 3		; [a, b, t, $RET, a, b - a, t]
+	mulf		; [a, b, t, $RET, a, (b - a) * t]
+	addf		; [a, b, t, $RET, a + (b - a) * t]
 
-	# Clean up the stack
-	swap 2		# [a, b, a + (b - a) * t, $RET, t]
-	pop		# [a, b, a + (b - a) * t, $RET]
-	swap 2		# [a, $RET, a + (b - a) * t, b]
-	pop		# [a, $RET, a + (b - a) * t]
-	swap 2		# [a + (b - a) * t, $RET, a]
-	pop		# [a + (b - a) * t, $RET]
+	; Clean up the stack
+	swap 2		; [a, b, a + (b - a) * t, $RET, t]
+	pop		; [a, b, a + (b - a) * t, $RET]
+	swap 2		; [a, $RET, a + (b - a) * t, b]
+	pop		; [a, $RET, a + (b - a) * t]
+	swap 2		; [a + (b - a) * t, $RET, a]
+	pop		; [a + (b - a) * t, $RET]
 
-	ret		# [a + (b - a) * t]
+	ret		; [a + (b - a) * t]
 
 main:
-	push 69.0	# a: [69.0]
-	push 420.0	# b: [69.9, 420.0]
-	push 0.0	# t: [69.0, 420.0, 0.0]
-	push 1.0	# 1: [69.0, 420.0, 0.0, 1.0]
-	push 10.0	# n: [69.0, 420.0, 0.0, 1.0, 10.0]
-	divf		# [69.0, 420.0, 0.0, 0.1]
+	push 69.0		; a: [69.0]
+	push 420.0		; b: [69.9, 420.0]
+	push 0.0		; t: [69.0, 420.0, 0.0]
+	push 1.0		; 1: [69.0, 420.0, 0.0, 1.0]
+	push 10.0		; n: [69.0, 420.0, 0.0, 1.0, 10.0]
+	divf			; [69.0, 420.0, 0.0, 0.1]
 
-loop:			# [69.0, 420.0, 0.0, 0.1]
-	dup 3		# [69.0, 420.0, 0.0, 0.1, 69.0]
-	dup 3		# [69.0, 420.0, 0.0, 0.1, 69.0, 420.0]
-	dup 3		# [69.0, 420.0, 0.0, 0.1, 69.0, 420.0, 0.0]
-	call lerpf	# [69.0, 420.0, 0.0, 0.1, $RES]
-	native 2	# [69.0, 420.0, 0.0, 0.1]
+loop:				; [69.0, 420.0, 0.0, 0.1]
+	dup 3			; [69.0, 420.0, 0.0, 0.1, 69.0]
+	dup 3			; [69.0, 420.0, 0.0, 0.1, 69.0, 420.0]
+	dup 3			; [69.0, 420.0, 0.0, 0.1, 69.0, 420.0, 0.0]
+	call lerpf		; [69.0, 420.0, 0.0, 0.1, $RES]
+	native print_f64	; [69.0, 420.0, 0.0, 0.1]
 
-	swap 1		# [69.0, 420.0, 0.1, 0.0]
-	dup 1		# [69.0, 420.0, 0.1, 0.0, 0.1]
-	addf		# [69.0, 420.0, 0.1, 0.1]
-	swap 1		# [69.0, 420.0, 0.1, 0.1]
+	swap 1			; [69.0, 420.0, 0.1, 0.0]
+	dup 1			; [69.0, 420.0, 0.1, 0.0, 0.1]
+	addf			; [69.0, 420.0, 0.1, 0.1]
+	swap 1			; [69.0, 420.0, 0.1, 0.1]
 
-	dup 1		# [69.0, 420.0, 0.1, 0.1, 0.1]
-	push 1.0	# [69.0, 420.0, 0.1, 0.1, 0.1, 1.0]
-	gef		# [69.0, 420.0, 0.1, 0.1, 1]
+	dup 1			; [69.0, 420.0, 0.1, 0.1, 0.1]
+	push 1.0		; [69.0, 420.0, 0.1, 0.1, 0.1, 1.0]
+	gef			; [69.0, 420.0, 0.1, 0.1, 1]
 
-	jif loop	# [69.0, 420.0, 0.1, 0.1]
+	jif loop		; [69.0, 420.0, 0.1, 0.1]
 	halt

@@ -28,6 +28,10 @@ project("ParseArgsC")
 		}
 	)
 
+	filter "configurations:Debug"
+		defines { "DEBUG" }
+		symbols "On"
+
 project "blvm"
 	filename ".blvm"
 	kind "SharedLib"

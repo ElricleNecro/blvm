@@ -77,6 +77,17 @@ StringView stringview_split_on_spaces(StringView *sv) {
 	return result;
 }
 
+StringView stringview_memcopy(StringView sv) {
+	StringView copy = {
+		.data = malloc(sv.count * sizeof(char)),
+		.count = sv.count,
+	};
+
+	memcpy(copy.data, sv.data, sv.count);
+
+	return copy;
+}
+
 bool stringview_eq(StringView a, StringView b) {
 	if( a.count != b.count )
 		return false;
@@ -84,8 +95,21 @@ bool stringview_eq(StringView a, StringView b) {
 	return memcmp(a.data, b.data, a.count) == 0;
 }
 
+bool stringview_eq_cstr(StringView a, const char *b) {
+	if( a.count != strlen(b) )
+		return false;
+
+	return memcmp(a.data, b, a.count) == 0;
+}
+
 bool stringview_endwith(StringView sv, const char end) {
 	if( sv.count > 0 && sv.data[sv.count - 1] == end)
+		return true;
+	return false;
+}
+
+bool stringview_startwith(StringView sv, const char start) {
+	if( sv.count > 0 && sv.data[0] == start)
 		return true;
 	return false;
 }

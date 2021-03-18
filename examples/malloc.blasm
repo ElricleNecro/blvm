@@ -1,24 +1,26 @@
+%include "natives.blhasm"
+
 	jmp main
 
 errors:
 	push -1
-	native 5
+	native print_ptr
 	halt
 
 main:
 	push 10
-	native 0
+	native alloc
 
 	dup 0
 	push 0
 	eq
 	jif errors
 
-	native 5
+	native print_ptr
 
-	native 1
+	native free
 
 	push 3.0
-	native 2
+	native print_f64
 
 	halt

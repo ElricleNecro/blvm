@@ -1,11 +1,13 @@
-# Fibonacci suit:
+%include "natives.blhasm"
+
+; Fibonacci suit:
 	push 0
 	push 1
-loop:   dup 1 # To keep the full suit in stack.
+loop:   dup 1 ; To keep the full suit in stack.
 	dup 1
 	add
 	dup 0
-	native 4
+	native print_u64
 	jmp loop
-# This will never be reached.
+; This will never be reached.
 	halt

@@ -1,7 +1,9 @@
+%include "natives.blhasm"
+
 push 1.0
 push 2.0
 push 3.0
 addf
 addf
-native 2
+native print_f64
 halt

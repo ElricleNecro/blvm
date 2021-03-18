@@ -1,7 +1,9 @@
+%include "natives.blhasm"
+
 push 0x01
 push 0x02
 push 0x03
 add
 add
-native 3
+native print_i64
 halt
