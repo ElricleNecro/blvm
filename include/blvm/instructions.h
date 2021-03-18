@@ -36,6 +36,13 @@ typedef enum insttype_e {
 	INST_GEF,
 	INST_NOT,
 
+	INST_AND,
+	INST_OR,
+	INST_XOR,
+	INST_SHR,
+	INST_SHL,
+	INST_BNOT,
+
 	INST_HALT,
 
 	INST_PRINT_DEBUG,

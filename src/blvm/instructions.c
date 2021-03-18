@@ -25,6 +25,13 @@ const char *inst_names[] = {
 	[INST_RET]         = "ret",
 	[INST_NATIVE]      = "native",
 
+	[INST_AND]         = "and",
+	[INST_OR]          = "or",
+	[INST_XOR]         = "xor",
+	[INST_SHR]         = "shr",
+	[INST_SHL]         = "shl",
+	[INST_BNOT]        = "bot",
+
 	[INST_EQ]          = "eq",
 	[INST_GT]          = "gt",
 	[INST_GEF]         = "gef",
@@ -64,6 +71,13 @@ const bool inst_required_operand[] = {
 	[INST_GT]          = false,
 	[INST_GEF]         = false,
 	[INST_NOT]         = false,
+
+	[INST_AND]         = false,
+	[INST_OR]          = false,
+	[INST_XOR]         = false,
+	[INST_SHR]         = false,
+	[INST_SHL]         = false,
+	[INST_BNOT]        = false,
 
 	[INST_HALT]        = false,
 

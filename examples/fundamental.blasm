@@ -1,0 +1,22 @@
+%include "natives.blhasm"
+%define N 69420
+
+	jmp main
+main:
+	push N			; [N]
+loop:
+	dup 0			; [N, N]
+	push 1			; [N, N, 1]
+	and			; [N, N & 1]
+	native print_u64	; [N]
+
+	push 1			; [N, 1]
+	shr			; [N >> 1]
+
+	dup 0			; [N >> 1, N >> 1]
+	push 0			; [N >> 1, N >> 1, 0]
+	eq			; [N >> 1, N >> 1, 0]
+	not			; [N >> 1, N >> 1, 1]
+
+	jif loop		; [N >> 1, N >> 1]
+	halt
