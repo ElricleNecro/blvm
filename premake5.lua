@@ -7,6 +7,10 @@ workspace "BLVM"
 		includedirs { "include/", }
 
 		warnings "Extra"
+		enablewarnings {
+			"switch-enum",
+			"conversion",
+		}
 
 	configurations "Release"
 		optimize "Full"
