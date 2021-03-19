@@ -87,6 +87,14 @@ void blvm_dump_stack(const Blvm *bl, FILE *stream) {
 	}
 }
 
+void blvm_dump_memory(const Blvm *bl, FILE *stream) {
+	fprintf(stream, "Memory:\n");
+	for(size_t i = 0; i < BLISP_STATIC_MEMORY_CAPACITY / 1000; i++) {
+		fprintf(stream, "%x ", bl->memory[i]);
+	}
+	fprintf(stream, "\n");
+}
+
 void blvm_show_state(const Blvm *bl, FILE *stream) {
 		fprintf(stream, "0x%03lX: %s", bl->ip, inst_names[bl->program[bl->ip].type]);
 
@@ -367,6 +375,146 @@ Trap blvm_execute_inst(Blvm *bl) {
 			bl->stack[bl->sp - 1].u64 = ~bl->stack[bl->sp - 1].u64;
 
 			bl->ip += 1;
+
+			break;
+
+		case INST_READ8: {
+				if( bl->sp < 1 )
+					return TRAP_STACK_UNDERFLOW;
+
+				uint64_t addr = bl->stack[bl->sp - 1].u64;
+
+				if( addr >= BLISP_STATIC_MEMORY_CAPACITY )
+					return TRAP_ILLEGAL_MEMORY_ACCESS;
+
+				bl->stack[bl->sp - 1].u64 = bl->memory[addr];
+
+				bl->ip += 1;
+			}
+
+			break;
+
+		case INST_READ16: {
+				if( bl->sp < 1 )
+					return TRAP_STACK_UNDERFLOW;
+
+				uint64_t addr = bl->stack[bl->sp - 1].u64;
+
+				if( addr + 1 >= BLISP_STATIC_MEMORY_CAPACITY )
+					return TRAP_ILLEGAL_MEMORY_ACCESS;
+
+				bl->stack[bl->sp - 1].u64 = *(uint16_t*)(&bl->memory[addr]);
+
+				bl->ip += 1;
+			}
+
+			break;
+
+		case INST_READ32: {
+				if( bl->sp < 1 )
+					return TRAP_STACK_UNDERFLOW;
+
+				uint64_t addr = bl->stack[bl->sp - 1].u64;
+
+				if( addr + 3 >= BLISP_STATIC_MEMORY_CAPACITY )
+					return TRAP_ILLEGAL_MEMORY_ACCESS;
+
+				bl->stack[bl->sp - 1].u64 = *(uint32_t*)(&bl->memory[addr]);
+
+				bl->ip += 1;
+			}
+
+			break;
+
+		case INST_READ64: {
+				if( bl->sp < 1 )
+					return TRAP_STACK_UNDERFLOW;
+
+				uint64_t addr = bl->stack[bl->sp - 1].u64;
+
+				if( addr + 7 >= BLISP_STATIC_MEMORY_CAPACITY )
+					return TRAP_ILLEGAL_MEMORY_ACCESS;
+
+				bl->stack[bl->sp - 1].u64 = *(uint64_t*)(&bl->memory[addr]);
+
+				bl->ip += 1;
+			}
+
+			break;
+
+		case INST_WRITE8: {
+				if( bl->sp < 2 )
+					return TRAP_STACK_UNDERFLOW;
+
+				uint64_t addr = bl->stack[bl->sp - 2].u64;
+
+				if( addr >= BLISP_STATIC_MEMORY_CAPACITY )
+					return TRAP_ILLEGAL_MEMORY_ACCESS;
+
+				uint8_t value = (uint8_t)bl->stack[bl->sp - 1].u64;
+
+				bl->memory[addr] = value;
+
+				bl->sp -= 2;
+				bl->ip += 1;
+			}
+
+			break;
+
+		case INST_WRITE16: {
+				if( bl->sp < 2 )
+					return TRAP_STACK_UNDERFLOW;
+
+				uint64_t addr = bl->stack[bl->sp - 2].u64;
+
+				if( addr + 1 >= BLISP_STATIC_MEMORY_CAPACITY )
+					return TRAP_ILLEGAL_MEMORY_ACCESS;
+
+				uint16_t value = (uint16_t)bl->stack[bl->sp - 1].u64;
+
+				*(uint16_t*)&bl->memory[addr] = value;
+
+				bl->sp -= 2;
+				bl->ip += 1;
+			}
+
+			break;
+
+		case INST_WRITE32: {
+				if( bl->sp < 2 )
+					return TRAP_STACK_UNDERFLOW;
+
+				uint64_t addr = bl->stack[bl->sp - 2].u64;
+
+				if( addr + 3 >= BLISP_STATIC_MEMORY_CAPACITY )
+					return TRAP_ILLEGAL_MEMORY_ACCESS;
+
+				uint32_t value = (uint32_t)bl->stack[bl->sp - 1].u64;
+
+				*(uint32_t*)&bl->memory[addr] = value;
+
+				bl->sp -= 2;
+				bl->ip += 1;
+			}
+
+			break;
+
+		case INST_WRITE64: {
+				if( bl->sp < 2 )
+					return TRAP_STACK_UNDERFLOW;
+
+				uint64_t addr = bl->stack[bl->sp - 2].u64;
+
+				if( addr + 7 >= BLISP_STATIC_MEMORY_CAPACITY )
+					return TRAP_ILLEGAL_MEMORY_ACCESS;
+
+				uint64_t value = bl->stack[bl->sp - 1].u64;
+
+				*(uint64_t*)&bl->memory[addr] = value;
+
+				bl->sp -= 2;
+				bl->ip += 1;
+			}
 
 			break;
 

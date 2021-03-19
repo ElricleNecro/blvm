@@ -29,6 +29,8 @@ typedef struct blvm_t {
 	NativeFunctionCall natives[BLISP_NATIVES_CAPACITY];
 	size_t ns;
 
+	uint8_t memory[BLISP_STATIC_MEMORY_CAPACITY];
+
 	bool halt;
 } Blvm;
 
@@ -41,6 +43,7 @@ void blvm_save_program_to_file(Blvm bl, const char *fpath);
 Trap blvm_push_native(Blvm *bl, NativeFunctionCall func);
 
 void blvm_dump_stack(const Blvm *bl, FILE *stream);
+void blvm_dump_memory(const Blvm *bl, FILE *stream);
 void blvm_show_state(const Blvm *bl, FILE *stream);
 
 Trap blvm_execute_inst(Blvm *bl);

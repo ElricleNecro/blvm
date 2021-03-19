@@ -18,6 +18,8 @@ const char* trap_as_cstr(Trap trap) {
 			return "DIV_BY_ZERO";
 		case TRAP_ILLEGAL_INST_ACCESS:
 			return "ILLEGAL_INST_ACCESS";
+		case TRAP_ILLEGAL_MEMORY_ACCESS:
+			return "TRAP_ILLEGAL_MEMORY_ACCESS";
 		default:
 			assert(0 && "trap_as_cstr: Unreachable");
 	}

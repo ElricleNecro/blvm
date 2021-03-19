@@ -37,6 +37,16 @@ const char *inst_names[] = {
 	[INST_GEF]         = "gef",
 	[INST_NOT]         = "not",
 
+	[INST_READ8]       = "read8",
+	[INST_READ16]      = "read16",
+	[INST_READ32]      = "read32",
+	[INST_READ64]      = "read64",
+
+	[INST_WRITE8]      = "write8",
+	[INST_WRITE16]     = "write16",
+	[INST_WRITE32]     = "write32",
+	[INST_WRITE64]     = "write64",
+
 	[INST_HALT]        = "halt",
 
 	[INST_PRINT_DEBUG] = "print_debug",
@@ -78,6 +88,16 @@ const bool inst_required_operand[] = {
 	[INST_SHR]         = false,
 	[INST_SHL]         = false,
 	[INST_BNOT]        = false,
+
+	[INST_READ8]       = false,
+	[INST_READ16]      = false,
+	[INST_READ32]      = false,
+	[INST_READ64]      = false,
+
+	[INST_WRITE8]      = false,
+	[INST_WRITE16]     = false,
+	[INST_WRITE32]     = false,
+	[INST_WRITE64]     = false,
 
 	[INST_HALT]        = false,
 
