@@ -72,7 +72,7 @@ bool stringview_number_litteral(StringView sv, Word *word) {
 	char *endptr = NULL;
 
 	if( *sv.data == '-' ){
-		result.i64 = strtoul(sv.data, &endptr, 0);
+		result.i64 = strtol(sv.data, &endptr, 0);
 	} else {
 		result.u64 = strtoul(sv.data, &endptr, 0);
 	}
@@ -125,12 +125,12 @@ StringView load_file(const char *fpath) {
 	}
 
 	char *src = NULL;
-	if( (src = malloc(fsize)) == NULL ) {
+	if( (src = malloc((size_t)fsize)) == NULL ) {
 		fprintf(stderr, "ERROR: Could not allocate memory for file '%s': %s\n", fpath, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
-	size_t n = fread(src, sizeof(char), fsize, file);
+	size_t n = fread(src, sizeof(char), (size_t)fsize, file);
 	if( ferror(file) ) {
 		fprintf(stderr, "ERROR: Could not read from file '%s': %s\n", fpath, strerror(errno));
 		exit(EXIT_FAILURE);

@@ -30,19 +30,19 @@ void blvm_load_program_from_file(Blvm *bl, const char *fpath) {
 		exit(EXIT_FAILURE);
 	}
 
-	assert(fsize % sizeof(struct inst_t) == 0);
+	assert((size_t)fsize % sizeof(struct inst_t) == 0);
 
 	if( fseek(file, 0, SEEK_SET) < 0 ) {
 		fprintf(stderr, "ERROR: Could not read file '%s': %s\n", fpath, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
-	if( (bl->program = malloc(fsize)) == NULL ) {
+	if( (bl->program = malloc((size_t)fsize)) == NULL ) {
 		fprintf(stderr, "ERROR: Could not allocate memory for file '%s': %s\n", fpath, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
-	bl->program_size = fread(bl->program, sizeof(struct inst_t), fsize / sizeof(struct inst_t), file);
+	bl->program_size = fread(bl->program, sizeof(struct inst_t), (size_t)fsize / sizeof(struct inst_t), file);
 	if( ferror(file) ) {
 		fprintf(stderr, "ERROR: Could not read from file '%s': %s\n", fpath, strerror(errno));
 		exit(EXIT_FAILURE);
@@ -383,6 +383,7 @@ Trap blvm_execute_inst(Blvm *bl) {
 			bl->ip += 1;
 			break;
 
+		case NUMBER_OF_INSTS:
 		default:
 			return TRAP_ILLEGAL_INST;
 	}
