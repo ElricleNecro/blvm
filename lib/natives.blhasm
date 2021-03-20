@@ -4,3 +4,4 @@
 %define print_i64 3
 %define print_u64 4
 %define print_ptr 5
+%define print_mem 6

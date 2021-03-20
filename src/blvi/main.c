@@ -64,12 +64,40 @@ Trap blvm_print_ptr(Blvm *bl) {
 	return TRAP_OK;
 }
 
+Trap blvm_print_mem(Blvm *bl) {
+	if( bl->sp < 2 )
+		return TRAP_STACK_UNDERFLOW;
+
+	uint64_t count = bl->stack[bl->sp - 1].u64;
+	uint64_t from  = bl->stack[bl->sp - 2].u64;
+
+	if( from >= BLISP_STATIC_MEMORY_CAPACITY || count >= BLISP_STATIC_MEMORY_CAPACITY )
+		return TRAP_ILLEGAL_MEMORY_ACCESS;
+
+	if( (from + count - 1) >= BLISP_STATIC_MEMORY_CAPACITY || (from + count) < from)
+		return TRAP_ILLEGAL_MEMORY_ACCESS;
+
+	for(uint64_t addr = from; addr < (from + count); addr++) {
+		printf("0x%x", bl->memory[addr]);
+
+		if( addr < (from + count - 1) )
+			printf(" ");
+	}
+	printf("\n");
+
+	bl->sp -= 2;
+
+	return TRAP_OK;
+}
+
 int main(int argc, const char *argv[]) {
 	Args *args = Args_New();
 	Args_Error err;
 
 	int limit = -1;
+	bool debug = false;
 	Args_Add(args, "-l", "--limit", T_INT, &limit, "Maximum number of instruction to run.");
+	Args_Add(args, "-d", "--debug-mode", T_BOOL, &debug, "Print the VM state at each step.");
 
 	err = Args_Parse(args, argc, argv);
 	if( err == TREAT_ERROR ) {
@@ -120,9 +148,30 @@ int main(int argc, const char *argv[]) {
 		return EXIT_FAILURE;
 	}
 
-	if( (exc = blvm_execute_program(&bl, limit)) != TRAP_OK ) {
+	if( (exc = blvm_push_native(&bl, blvm_print_mem)) != TRAP_OK ) {
 		fprintf(stderr, "An error occured: %s.\n", trap_as_cstr(exc));
 		return EXIT_FAILURE;
+	}
+
+	if( ! debug ) {
+		if( (exc = blvm_execute_program(&bl, limit)) != TRAP_OK ) {
+			fprintf(stderr, "An error occured: %s.\n", trap_as_cstr(exc));
+			return EXIT_FAILURE;
+		}
+	} else {
+		while( limit != 0 && ! bl.halt ) {
+			blvm_dump_stack(&bl, stderr);
+			blvm_show_state(&bl, stderr);
+
+			fputs("\n", stderr);
+
+			if(  (exc = blvm_execute_inst(&bl)) != TRAP_OK ) {
+				fprintf(stderr, "An error occured: %s.\n", trap_as_cstr(exc));
+				return EXIT_FAILURE;
+			}
+			if( limit > 0 )
+				limit--;
+		}
 	}
 
 	blvm_clean(&bl);
