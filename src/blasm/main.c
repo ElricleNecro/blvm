@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 
 #include "Parser.h"
 
 #include "blvm/blvm.h"
+
+#include "records.h"
 #include "stringview.h"
+#include "utils.h"
 
 #ifndef BLASM_COMMENT_SYMBOL
 #define BLASM_COMMENT_SYMBOL ';'
@@ -16,136 +17,43 @@
 #define BLASM_PREPRO_SYMBOL '%'
 #endif
 
-typedef struct label_t {
-	StringView name;
-	Word word;
-} Label;
+typedef struct blprog_t {
+	Inst *program;
+	uint64_t program_size;
 
-typedef struct unresolved_t {
-	uint64_t addr;
-	StringView name;
-} Unresolved;
+	uint8_t *memory;
+	size_t memory_size;
+	size_t memory_capacity;
+} BlProg;
 
-typedef struct records_t {
-	Label *labels;
-	size_t labels_size;
-
-	Unresolved *jmps;
-	size_t jmps_size;
-} Records;
-
-Word records_find_label(Records records, StringView name) {
-	for(size_t idx=0; idx < records.labels_size; idx++)
-		if( stringview_eq(records.labels[idx].name, name) )
-			return records.labels[idx].word;
-
-	return (Word){.u64 = UINT64_MAX};
-}
-
-bool records_push_label(Records *records, StringView name, Word word) {
-	for(size_t idx=0; idx < records->labels_size; idx++)
-		if( stringview_eq(records->labels[idx].name, name) )
-			return false;
-
-	records->labels = realloc(records->labels, (records->labels_size + 1) * sizeof(struct label_t));
-	records->labels[records->labels_size++] = (Label){.name = stringview_memcopy(name), .word = word};
-
-	return true;
-}
-
-void records_push_unresolved(Records *records, uint64_t addr, StringView name) {
-	records->jmps = realloc(records->jmps, (records->jmps_size + 1) * sizeof(struct unresolved_t));
-	records->jmps[records->jmps_size++] = (Unresolved){.addr = addr, .name = stringview_memcopy(name)};
-}
-
-void records_free(Records *records) {
-	for(size_t idx=0; idx < records->jmps_size; idx++)
-		free(records->jmps[idx].name.data);
-	free(records->jmps), records->jmps = NULL, records->jmps_size = 0;
-	for(size_t idx=0; idx < records->labels_size; idx++)
-		free(records->labels[idx].name.data);
-	free(records->labels), records->labels = NULL, records->labels_size = 0;
-}
-
-bool stringview_number_litteral(StringView sv, Word *word) {
-	Word result = {0};
-	char *endptr = NULL;
-
-	if( *sv.data == '-' ){
-		result.i64 = strtol(sv.data, &endptr, 0);
-	} else {
-		result.u64 = strtoul(sv.data, &endptr, 0);
+void blprog_clean(BlProg *bl) {
+	if( bl->program != NULL ) {
+		free(bl->program);
+		bl->program_size = 0;
 	}
 
-	if( (size_t)(endptr - sv.data) != sv.count )
-		result.f64 = strtod(sv.data, &endptr);
-
-	if( (size_t)(endptr - sv.data) != sv.count ) {
-		/*fprintf(stderr, "ERROR: unrecognised number type: '%.*s', parsing stopped at character: '%c'.\n", (int)sv.count, sv.data, *endptr);*/
-		/*exit(EXIT_FAILURE);*/
-		return false;
+	if( bl->memory != NULL ) {
+		free(bl->memory);
+		bl->memory_capacity = 0;
+		bl->memory_size = 0;
 	}
-
-	*word = result;
-	return true;
 }
 
-bool stringview_as_insttype(StringView name, InstType *output) {
-	for(InstType type = (InstType)0; type < NUMBER_OF_INSTS; type += 1) {
-		if( stringview_eq(name, cstr_as_stringview((char*)inst_names[type])) ) {
-			*output = type;
-			return true;
-		}
-	}
-
-	return false;
-}
-
-StringView load_file(const char *fpath) {
+void blprog_save_program_to_file(BlProg bl, const char *fpath) {
 	FILE *file = NULL;
-	if( (file = fopen(fpath, "r")) == NULL ) {
+
+	if( (file = fopen(fpath, "wb")) == NULL ) {
 		fprintf(stderr, "ERROR: Could not open file '%s': %s\n", fpath, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
-	if( fseek(file, 0, SEEK_END) < 0 ) {
-		fprintf(stderr, "ERROR: Could not read file '%s': %s\n", fpath, strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-
-	long fsize = ftell(file);
-	if( fsize < 0 ) {
-		fprintf(stderr, "ERROR: Could not read file '%s': %s\n", fpath, strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-
-	if( fseek(file, 0, SEEK_SET) < 0 ) {
-		fprintf(stderr, "ERROR: Could not read file '%s': %s\n", fpath, strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-
-	char *src = NULL;
-	if( (src = malloc((size_t)fsize)) == NULL ) {
-		fprintf(stderr, "ERROR: Could not allocate memory for file '%s': %s\n", fpath, strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-
-	size_t n = fread(src, sizeof(char), (size_t)fsize, file);
+	fwrite(bl.program, sizeof(struct inst_t), bl.program_size, file);
 	if( ferror(file) ) {
-		fprintf(stderr, "ERROR: Could not read from file '%s': %s\n", fpath, strerror(errno));
+		fprintf(stderr, "ERROR: Could not write to file '%s': %s\n", fpath, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
 	fclose(file);
-
-	return (StringView) {
-		.count = n,
-		.data = src,
-	};
-}
-
-bool file_exist(const char *name) {
-	return access(name, F_OK | R_OK) == 0;
 }
 
 char* search_file(const CList paths, StringView include) {
@@ -163,7 +71,7 @@ char* search_file(const CList paths, StringView include) {
 	return NULL;
 }
 
-bool translate_source(Blvm *bl, const CList include_paths, const char *fname, StringView src, Records *records) {
+bool translate_source(BlProg *bl, const CList include_paths, const char *fname, StringView src, Records *records) {
 	for(size_t line_nb = 1; src.count > 0; line_nb++) {
 		StringView line = stringview_split(&src, '\n');
 		line = stringview_trim(line);
@@ -318,14 +226,14 @@ int main(int argc, const char *argv[]) {
 
 	const char *input = args->rest->opt;
 
-	Blvm bl = {0};
+	BlProg bl = {0};
 	Records records = {0};
 
 	StringView src = load_file(input);
 	if( translate_source(&bl, include_paths, input, src, &records) )
-		blvm_save_program_to_file(bl, output);
+		blprog_save_program_to_file(bl, output);
 
-	blvm_clean(&bl);
+	blprog_clean(&bl);
 	records_free(&records);
 	free(src.data);
 

@@ -122,3 +122,46 @@ int stringview_to_int(StringView sv) {
 
 	return result;
 }
+
+StringView load_file(const char *fpath) {
+	FILE *file = NULL;
+	if( (file = fopen(fpath, "r")) == NULL ) {
+		fprintf(stderr, "ERROR: Could not open file '%s': %s\n", fpath, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	if( fseek(file, 0, SEEK_END) < 0 ) {
+		fprintf(stderr, "ERROR: Could not read file '%s': %s\n", fpath, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	long fsize = ftell(file);
+	if( fsize < 0 ) {
+		fprintf(stderr, "ERROR: Could not read file '%s': %s\n", fpath, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	if( fseek(file, 0, SEEK_SET) < 0 ) {
+		fprintf(stderr, "ERROR: Could not read file '%s': %s\n", fpath, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	char *src = NULL;
+	if( (src = malloc((size_t)fsize)) == NULL ) {
+		fprintf(stderr, "ERROR: Could not allocate memory for file '%s': %s\n", fpath, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	size_t n = fread(src, sizeof(char), (size_t)fsize, file);
+	if( ferror(file) ) {
+		fprintf(stderr, "ERROR: Could not read from file '%s': %s\n", fpath, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	fclose(file);
+
+	return (StringView) {
+		.count = n,
+		.data = src,
+	};
+}

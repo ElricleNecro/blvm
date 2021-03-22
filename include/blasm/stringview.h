@@ -2,8 +2,10 @@
 #define STRINGVIEW_H_SLZDE4UB
 
 #include <ctype.h>
+#include <errno.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 typedef struct string_view_t {
@@ -23,5 +25,7 @@ bool stringview_eq_cstr(StringView a, const char *b);
 bool stringview_endwith(StringView sv, const char end);
 bool stringview_startwith(StringView sv, const char start);
 int stringview_to_int(StringView sv);
+
+StringView load_file(const char *fpath);
 
 #endif /* end of include guard: STRINGVIEW_H_SLZDE4UB */
