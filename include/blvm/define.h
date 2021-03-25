@@ -24,6 +24,23 @@
 
 #define INFINITE_FIB_NUMBER { MAKE_INST_PUSH(0), MAKE_INST_PUSH(1), MAKE_INST_DUP(1), MAKE_INST_DUP(1), MAKE_INST_ADD, MAKE_INST_JMP(2), MAKE_INST_HALT, }
 
+#ifndef _STRUCT_OPTIONS
+#	if defined(__GNUC__) || defined(__clang__)
+#		define _STRUCT_OPTIONS __attribute__((packed))
+#	else
+#		warning "Packed attributes for struct is not available/supported for this compiler."
+#		define _STRUCT_OPTIONS
+#	endif
+#endif
+
+#ifndef BL_MAGIC
+#define BL_MAGIC 0x4C42
+#endif
+
+#ifndef BL_VERSION
+#define BL_VERSION 1
+#endif
+
 typedef union word_u {
 	uint64_t u64;
 	int64_t i64;

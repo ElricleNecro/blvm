@@ -17,25 +17,31 @@
 #define BLASM_PREPRO_SYMBOL '%'
 #endif
 
-typedef struct blprog_t {
+typedef struct _STRUCT_OPTIONS bl_file_program {
 	Inst *program;
 	uint64_t program_size;
+} BlProgram;
 
-	uint8_t *memory;
-	size_t memory_size;
-	size_t memory_capacity;
+typedef struct _STRUCT_OPTIONS bl_file_memory {
+	size_t memory_size;	/** Actual size of the memory */
+	size_t memory_capacity;	/** Actual size of the memory */
+	uint8_t *memory;	/** VM memory */
+} BlMemory;
+
+typedef struct blprog_t {
+	BlProgram prog;
+	BlMemory mem;
 } BlProg;
 
 void blprog_clean(BlProg *bl) {
-	if( bl->program != NULL ) {
-		free(bl->program);
-		bl->program_size = 0;
+	if( bl->prog.program != NULL ) {
+		free(bl->prog.program);
+		bl->prog.program_size = 0;
 	}
 
-	if( bl->memory != NULL ) {
-		free(bl->memory);
-		bl->memory_capacity = 0;
-		bl->memory_size = 0;
+	if( bl->mem.memory != NULL ) {
+		free(bl->mem.memory);
+		bl->mem.memory_size = 0;
 	}
 }
 
@@ -47,7 +53,27 @@ void blprog_save_program_to_file(BlProg bl, const char *fpath) {
 		exit(EXIT_FAILURE);
 	}
 
-	fwrite(bl.program, sizeof(struct inst_t), bl.program_size, file);
+	BlMeta meta = {
+		.magic = BL_MAGIC,
+		.version = BL_VERSION,
+		.memory_size = bl.mem.memory_size,
+		.memory_capacity = bl.mem.memory_capacity,
+		.program_size = bl.prog.program_size,
+	};
+
+	fwrite(&meta, sizeof(BlMeta), 1, file);
+	if( ferror(file) ) {
+		fprintf(stderr, "ERROR: Could not write to file '%s': %s\n", fpath, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	fwrite(bl.prog.program, sizeof(struct inst_t), bl.prog.program_size, file);
+	if( ferror(file) ) {
+		fprintf(stderr, "ERROR: Could not write to file '%s': %s\n", fpath, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	fwrite(bl.mem.memory, sizeof(uint8_t), bl.mem.memory_size, file);
 	if( ferror(file) ) {
 		fprintf(stderr, "ERROR: Could not write to file '%s': %s\n", fpath, strerror(errno));
 		exit(EXIT_FAILURE);
@@ -106,7 +132,7 @@ bool translate_source(BlProg *bl, const CList include_paths, const char *fname, 
 				Word word = {0};
 				if( !stringview_number_litteral(value, &word) ) {
 					// As of now, only number literal are supported:
-					fprintf(stderr, "%s:%lu: ERROR: only numbers can be associated to a label, not '%.*s'.\n", fname, line_nb, (int)directive.count, directive.data);
+					fprintf(stderr, "%s:%lu: ERROR: only numbers and strings can be associated to a label, not '%.*s'.\n", fname, line_nb, (int)directive.count, directive.data);
 					return false;
 				}
 
@@ -154,7 +180,7 @@ bool translate_source(BlProg *bl, const CList include_paths, const char *fname, 
 		}
 
 		if( stringview_endwith(name, ':') ) {
-			if( !records_push_label(records, (StringView){.data = name.data, .count = name.count - 1}, (Word){.u64 = bl->program_size}) ) {
+			if( !records_push_label(records, (StringView){.data = name.data, .count = name.count - 1}, (Word){.u64 = bl->prog.program_size}) ) {
 				fprintf(stderr, "%s:%lu: ERROR: label '%.*s' already exist.\n", fname, line_nb, (int)name.count-1, name.data);
 				return false;
 			}
@@ -178,12 +204,12 @@ bool translate_source(BlProg *bl, const CList include_paths, const char *fname, 
 					return false;
 				} else if( !stringview_number_litteral(operand, &inst.operand) ) {
 					// If we cannot convert it, it may be a label, so store it to be replaced later:
-					records_push_unresolved(records, bl->program_size, operand);
+					records_push_unresolved(records, bl->prog.program_size, operand);
 				}
 			}
 
-			bl->program = realloc(bl->program, (bl->program_size + 1) * sizeof(struct inst_t));
-			bl->program[bl->program_size++] = inst;
+			bl->prog.program = realloc(bl->prog.program, (bl->prog.program_size + 1) * sizeof(struct inst_t));
+			bl->prog.program[bl->prog.program_size++] = inst;
 		} else {
 			fprintf(stderr, "%s:%lu: ERROR: unknown instruction '%.*s'\n", fname, line_nb, (int)name.count, name.data);
 			return false;
@@ -191,9 +217,9 @@ bool translate_source(BlProg *bl, const CList include_paths, const char *fname, 
 	}
 
 	for(size_t idx = 0; idx < records->jmps_size; idx++) {
-		bl->program[records->jmps[idx].addr].operand = records_find_label(*records, records->jmps[idx].name);
+		bl->prog.program[records->jmps[idx].addr].operand = records_find_label(*records, records->jmps[idx].name);
 
-		if( bl->program[records->jmps[idx].addr].operand.u64 == UINT64_MAX ) {
+		if( bl->prog.program[records->jmps[idx].addr].operand.u64 == UINT64_MAX ) {
 			fprintf(stderr, "%s: ERROR: undefined label '%.*s'.\n", fname, (int)records->jmps[idx].name.count, records->jmps[idx].name.data);
 			return false;
 		}
@@ -228,6 +254,8 @@ int main(int argc, const char *argv[]) {
 
 	BlProg bl = {0};
 	Records records = {0};
+
+	bl.mem.memory_capacity = BLISP_STATIC_MEMORY_CAPACITY;
 
 	StringView src = load_file(input);
 	if( translate_source(&bl, include_paths, input, src, &records) )

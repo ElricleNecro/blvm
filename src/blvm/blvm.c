@@ -4,68 +4,52 @@ void blvm_clean(Blvm *bl) {
 	free(bl->program), bl->program_size = 0;
 }
 
-void blvm_load_program_from_memory(Blvm *bl, const Inst *program, size_t size) {
-	bl->program = malloc(size * sizeof(struct inst_t));
-	bl->program_size = size;
-
-	memcpy(bl->program, program, size * sizeof(struct inst_t));
-}
-
-void blvm_load_program_from_file(Blvm *bl, const char *fpath) {
+bool blvm_load_program_from_file(Blvm *bl, const char *fpath) {
 	FILE *file = NULL;
 
 	if( (file = fopen(fpath, "rb")) == NULL ) {
 		fprintf(stderr, "ERROR: Could not open file '%s': %s\n", fpath, strerror(errno));
-		exit(EXIT_FAILURE);
+		return false;
 	}
 
-	if( fseek(file, 0, SEEK_END) < 0 ) {
-		fprintf(stderr, "ERROR: Could not read file '%s': %s\n", fpath, strerror(errno));
-		exit(EXIT_FAILURE);
+	BlMeta meta = {0};
+	assert(fread(&meta, sizeof(BlMeta), 1, file) == 1);
+	if( ferror(file) ) {
+		fprintf(stderr, "ERROR: Could not read metadata from file '%s': %s\n", fpath, strerror(errno));
+		return false;
 	}
 
-	long fsize = ftell(file);
-	if( fsize < 0 ) {
-		fprintf(stderr, "ERROR: Could not read file '%s': %s\n", fpath, strerror(errno));
-		exit(EXIT_FAILURE);
+	if( meta.magic != BL_MAGIC) {
+		fprintf(stderr, "ERROR: '%s' is not a valid file format (magic != %u).\n", fpath, BL_MAGIC);
+		return false;
 	}
 
-	assert((size_t)fsize % sizeof(struct inst_t) == 0);
-
-	if( fseek(file, 0, SEEK_SET) < 0 ) {
-		fprintf(stderr, "ERROR: Could not read file '%s': %s\n", fpath, strerror(errno));
-		exit(EXIT_FAILURE);
+	if( meta.version != BL_VERSION ) {
+		fprintf(stderr, "ERROR: Unsupported file version %d.\n", meta.version);
+		return false;
 	}
 
-	if( (bl->program = malloc((size_t)fsize)) == NULL ) {
-		fprintf(stderr, "ERROR: Could not allocate memory for file '%s': %s\n", fpath, strerror(errno));
-		exit(EXIT_FAILURE);
-	}
+	bl->program_size = meta.program_size;
+	bl->memory_capacity = meta.memory_capacity;
 
-	bl->program_size = fread(bl->program, sizeof(struct inst_t), (size_t)fsize / sizeof(struct inst_t), file);
+	bl->program = (Inst*)malloc(bl->program_size * sizeof(struct inst_t));
+	bl->memory = (uint8_t*)malloc(bl->memory_capacity * sizeof(uint8_t));
+
+	assert(fread(bl->program, sizeof(struct inst_t), bl->program_size, file) == bl->program_size);
 	if( ferror(file) ) {
 		fprintf(stderr, "ERROR: Could not read from file '%s': %s\n", fpath, strerror(errno));
-		exit(EXIT_FAILURE);
+		return false;
 	}
 
-	fclose(file);
-}
-
-void blvm_save_program_to_file(Blvm bl, const char *fpath) {
-	FILE *file = NULL;
-
-	if( (file = fopen(fpath, "wb")) == NULL ) {
-		fprintf(stderr, "ERROR: Could not open file '%s': %s\n", fpath, strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-
-	fwrite(bl.program, sizeof(struct inst_t), bl.program_size, file);
+	assert(fread(bl->memory, sizeof(uint8_t), meta.memory_size, file) == meta.memory_size);
 	if( ferror(file) ) {
-		fprintf(stderr, "ERROR: Could not write to file '%s': %s\n", fpath, strerror(errno));
-		exit(EXIT_FAILURE);
+		fprintf(stderr, "ERROR: Could not read from file '%s': %s\n", fpath, strerror(errno));
+		return false;
 	}
 
 	fclose(file);
+
+	return true;
 }
 
 Trap blvm_push_native(Blvm *bl, NativeFunctionCall func) {
@@ -89,7 +73,7 @@ void blvm_dump_stack(const Blvm *bl, FILE *stream) {
 
 void blvm_dump_memory(const Blvm *bl, FILE *stream) {
 	fprintf(stream, "Memory:\n");
-	for(size_t i = 0; i < BLISP_STATIC_MEMORY_CAPACITY / 1000; i++) {
+	for(size_t i = 0; i < bl->memory_capacity / 1000; i++) {
 		fprintf(stream, "%x ", bl->memory[i]);
 	}
 	fprintf(stream, "\n");
@@ -384,7 +368,7 @@ Trap blvm_execute_inst(Blvm *bl) {
 
 				uint64_t addr = bl->stack[bl->sp - 1].u64;
 
-				if( addr >= BLISP_STATIC_MEMORY_CAPACITY )
+				if( addr >= bl->memory_capacity )
 					return TRAP_ILLEGAL_MEMORY_ACCESS;
 
 				bl->stack[bl->sp - 1].u64 = bl->memory[addr];
@@ -400,7 +384,7 @@ Trap blvm_execute_inst(Blvm *bl) {
 
 				uint64_t addr = bl->stack[bl->sp - 1].u64;
 
-				if( addr + 1 >= BLISP_STATIC_MEMORY_CAPACITY )
+				if( addr + 1 >= bl->memory_capacity )
 					return TRAP_ILLEGAL_MEMORY_ACCESS;
 
 				bl->stack[bl->sp - 1].u64 = *(uint16_t*)(&bl->memory[addr]);
@@ -416,7 +400,7 @@ Trap blvm_execute_inst(Blvm *bl) {
 
 				uint64_t addr = bl->stack[bl->sp - 1].u64;
 
-				if( addr + 3 >= BLISP_STATIC_MEMORY_CAPACITY )
+				if( addr + 3 >= bl->memory_capacity )
 					return TRAP_ILLEGAL_MEMORY_ACCESS;
 
 				bl->stack[bl->sp - 1].u64 = *(uint32_t*)(&bl->memory[addr]);
@@ -432,7 +416,7 @@ Trap blvm_execute_inst(Blvm *bl) {
 
 				uint64_t addr = bl->stack[bl->sp - 1].u64;
 
-				if( addr + 7 >= BLISP_STATIC_MEMORY_CAPACITY )
+				if( addr + 7 >= bl->memory_capacity )
 					return TRAP_ILLEGAL_MEMORY_ACCESS;
 
 				bl->stack[bl->sp - 1].u64 = *(uint64_t*)(&bl->memory[addr]);
@@ -448,7 +432,7 @@ Trap blvm_execute_inst(Blvm *bl) {
 
 				uint64_t addr = bl->stack[bl->sp - 2].u64;
 
-				if( addr >= BLISP_STATIC_MEMORY_CAPACITY )
+				if( addr >= bl->memory_capacity )
 					return TRAP_ILLEGAL_MEMORY_ACCESS;
 
 				uint8_t value = (uint8_t)bl->stack[bl->sp - 1].u64;
@@ -467,7 +451,7 @@ Trap blvm_execute_inst(Blvm *bl) {
 
 				uint64_t addr = bl->stack[bl->sp - 2].u64;
 
-				if( addr + 1 >= BLISP_STATIC_MEMORY_CAPACITY )
+				if( addr + 1 >= bl->memory_capacity )
 					return TRAP_ILLEGAL_MEMORY_ACCESS;
 
 				uint16_t value = (uint16_t)bl->stack[bl->sp - 1].u64;
@@ -486,7 +470,7 @@ Trap blvm_execute_inst(Blvm *bl) {
 
 				uint64_t addr = bl->stack[bl->sp - 2].u64;
 
-				if( addr + 3 >= BLISP_STATIC_MEMORY_CAPACITY )
+				if( addr + 3 >= bl->memory_capacity )
 					return TRAP_ILLEGAL_MEMORY_ACCESS;
 
 				uint32_t value = (uint32_t)bl->stack[bl->sp - 1].u64;
@@ -505,7 +489,7 @@ Trap blvm_execute_inst(Blvm *bl) {
 
 				uint64_t addr = bl->stack[bl->sp - 2].u64;
 
-				if( addr + 7 >= BLISP_STATIC_MEMORY_CAPACITY )
+				if( addr + 7 >= bl->memory_capacity )
 					return TRAP_ILLEGAL_MEMORY_ACCESS;
 
 				uint64_t value = bl->stack[bl->sp - 1].u64;

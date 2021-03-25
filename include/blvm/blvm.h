@@ -15,6 +15,14 @@
 #include "blvm/errors.h"
 #include "blvm/instructions.h"
 
+typedef struct _STRUCT_OPTIONS bl_file_meta {
+	uint16_t magic;
+	uint16_t version;
+	uint64_t program_size;
+	uint64_t memory_size;
+	uint64_t memory_capacity;
+} BlMeta;
+
 struct blvm_t;
 typedef Trap (*NativeFunctionCall)(struct blvm_t*);
 
@@ -29,16 +37,15 @@ typedef struct blvm_t {
 	NativeFunctionCall natives[BLISP_NATIVES_CAPACITY];
 	size_t ns;
 
-	uint8_t memory[BLISP_STATIC_MEMORY_CAPACITY];
+	uint8_t *memory;
+	uint64_t memory_capacity;
 
 	bool halt;
 } Blvm;
 
 void blvm_clean(Blvm *bl);
 
-void blvm_load_program_from_memory(Blvm *bl, const Inst *program, size_t size);
-void blvm_load_program_from_file(Blvm *bl, const char *fpath);
-void blvm_save_program_to_file(Blvm bl, const char *fpath);
+bool blvm_load_program_from_file(Blvm *bl, const char *fpath);
 
 Trap blvm_push_native(Blvm *bl, NativeFunctionCall func);
 

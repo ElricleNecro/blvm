@@ -108,6 +108,7 @@ int main(int argc, const char *argv[]) {
 		return EXIT_SUCCESS;
 	} else if( args->rest == NULL ) {
 		fprintf(stderr, "Missing arguments.");
+		Args_Free(args);
 		return EXIT_FAILURE;
 	}
 
@@ -116,46 +117,85 @@ int main(int argc, const char *argv[]) {
 	Blvm bl = {0};
 	Trap exc = TRAP_OK;
 
-	blvm_load_program_from_file(&bl, program);
+	if( ! blvm_load_program_from_file(&bl, program) ) {
+		fprintf(stderr, "An error occured while trying to read '%s'. Exiting.", program);
+
+		blvm_clean(&bl);
+		Args_Free(args);
+
+		return EXIT_FAILURE;
+	}
 
 	if( (exc = blvm_push_native(&bl, blvm_alloc)) != TRAP_OK ) {
 		fprintf(stderr, "An error occured: %s.\n", trap_as_cstr(exc));
+
+		blvm_clean(&bl);
+		Args_Free(args);
+
 		return EXIT_FAILURE;
 	}
 
 	if( (exc = blvm_push_native(&bl, blvm_free)) != TRAP_OK ) {
 		fprintf(stderr, "An error occured: %s.\n", trap_as_cstr(exc));
+
+		blvm_clean(&bl);
+		Args_Free(args);
+
 		return EXIT_FAILURE;
 	}
 
 	if( (exc = blvm_push_native(&bl, blvm_print_f64)) != TRAP_OK ) {
 		fprintf(stderr, "An error occured: %s.\n", trap_as_cstr(exc));
+
+		blvm_clean(&bl);
+		Args_Free(args);
+
 		return EXIT_FAILURE;
 	}
 
 	if( (exc = blvm_push_native(&bl, blvm_print_i64)) != TRAP_OK ) {
 		fprintf(stderr, "An error occured: %s.\n", trap_as_cstr(exc));
+
+		blvm_clean(&bl);
+		Args_Free(args);
+
 		return EXIT_FAILURE;
 	}
 
 	if( (exc = blvm_push_native(&bl, blvm_print_u64)) != TRAP_OK ) {
 		fprintf(stderr, "An error occured: %s.\n", trap_as_cstr(exc));
+
+		blvm_clean(&bl);
+		Args_Free(args);
+
 		return EXIT_FAILURE;
 	}
 
 	if( (exc = blvm_push_native(&bl, blvm_print_ptr)) != TRAP_OK ) {
 		fprintf(stderr, "An error occured: %s.\n", trap_as_cstr(exc));
+
+		blvm_clean(&bl);
+		Args_Free(args);
+
 		return EXIT_FAILURE;
 	}
 
 	if( (exc = blvm_push_native(&bl, blvm_print_mem)) != TRAP_OK ) {
 		fprintf(stderr, "An error occured: %s.\n", trap_as_cstr(exc));
+
+		blvm_clean(&bl);
+		Args_Free(args);
+
 		return EXIT_FAILURE;
 	}
 
 	if( ! debug ) {
 		if( (exc = blvm_execute_program(&bl, limit)) != TRAP_OK ) {
 			fprintf(stderr, "An error occured: %s.\n", trap_as_cstr(exc));
+
+			blvm_clean(&bl);
+			Args_Free(args);
+
 			return EXIT_FAILURE;
 		}
 	} else {
@@ -167,6 +207,10 @@ int main(int argc, const char *argv[]) {
 
 			if(  (exc = blvm_execute_inst(&bl)) != TRAP_OK ) {
 				fprintf(stderr, "An error occured: %s.\n", trap_as_cstr(exc));
+
+				blvm_clean(&bl);
+				Args_Free(args);
+
 				return EXIT_FAILURE;
 			}
 			if( limit > 0 )
