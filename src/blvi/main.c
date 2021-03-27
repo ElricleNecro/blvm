@@ -71,10 +71,10 @@ Trap blvm_print_mem(Blvm *bl) {
 	uint64_t count = bl->stack[bl->sp - 1].u64;
 	uint64_t from  = bl->stack[bl->sp - 2].u64;
 
-	if( from >= BLISP_STATIC_MEMORY_CAPACITY || count >= BLISP_STATIC_MEMORY_CAPACITY )
+	if( from >= bl->memory_capacity || count > bl->memory_capacity )
 		return TRAP_ILLEGAL_MEMORY_ACCESS;
 
-	if( (from + count - 1) >= BLISP_STATIC_MEMORY_CAPACITY || (from + count) < from)
+	if( (from + count - 1) >= bl->memory_capacity || (from + count) < from)
 		return TRAP_ILLEGAL_MEMORY_ACCESS;
 
 	for(uint64_t addr = from; addr < (from + count); addr++) {
@@ -97,10 +97,10 @@ Trap blvm_write(Blvm *bl) {
 	uint64_t addr = bl->stack[bl->sp - 2].u64;
 	uint64_t size = bl->stack[bl->sp - 1].u64;
 
-	if( addr >= BLISP_STATIC_MEMORY_CAPACITY || size >= BLISP_STATIC_MEMORY_CAPACITY )
+	if( addr >= bl->memory_capacity || size > bl->memory_capacity )
 		return TRAP_ILLEGAL_MEMORY_ACCESS;
 
-	if( (addr + size - 1) >= BLISP_STATIC_MEMORY_CAPACITY || (addr + size) < addr)
+	if( (addr + size - 1) >= bl->memory_capacity || (addr + size) < addr)
 		return TRAP_ILLEGAL_MEMORY_ACCESS;
 
 	fwrite(&bl->memory[addr], sizeof(uint8_t), size, stdout);
