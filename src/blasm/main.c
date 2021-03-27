@@ -127,13 +127,36 @@ bool translate_source(BlProg *bl, const CList include_paths, const char *fname, 
 				}
 
 				line = stringview_trim(line);
-				// And getting the associated value:
-				StringView value = stringview_split_on_spaces(&line);
+
 				Word word = {0};
-				if( !stringview_number_litteral(value, &word) ) {
-					// As of now, only number literal are supported:
-					fprintf(stderr, "%s:%lu: ERROR: only numbers and strings can be associated to a label, not '%.*s'.\n", fname, line_nb, (int)directive.count, directive.data);
-					return false;
+
+				if( stringview_startwith(line, '"') ) {
+					line.count -= 1;
+					line.data += 1;
+
+					StringView str = stringview_split(&line, '"');
+
+					if( bl->mem.memory_size + str.count >= bl->mem.memory_capacity ) {
+						fprintf(stderr, "%s:%lu: ERROR: not enough memory capacity to store the string '%.*s'.\n", fname, line_nb, (int)str.count, str.data);
+						return false;
+					}
+
+					word.u64 = bl->mem.memory_size;
+
+					bl->mem.memory = realloc(bl->mem.memory, (bl->mem.memory_size + str.count) * sizeof(uint8_t));
+
+					// Copying the string into the VM memory:
+					memcpy(&bl->mem.memory[bl->mem.memory_size], str.data, str.count);
+					bl->mem.memory_size += str.count;
+				} else {
+					// And getting the associated value:
+					StringView value = stringview_split_on_spaces(&line);
+
+					if( !stringview_number_litteral(value, &word) ) {
+						// As of now, only number literal are supported:
+						fprintf(stderr, "%s:%lu: ERROR: only numbers and strings can be associated to a label, not '%.*s'.\n", fname, line_nb, (int)directive.count, directive.data);
+						return false;
+					}
 				}
 
 				if( !records_push_label(records, label, word) ) {
