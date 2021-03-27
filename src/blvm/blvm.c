@@ -72,8 +72,8 @@ void blvm_dump_stack(const Blvm *bl, FILE *stream) {
 }
 
 void blvm_dump_memory(const Blvm *bl, FILE *stream) {
-	fprintf(stream, "Memory:\n");
-	for(size_t i = 0; i < bl->memory_capacity / 1000; i++) {
+	fprintf(stream, "Memory (capacity: %lu):\n", bl->memory_capacity);
+	for(size_t i = 0; i < bl->memory_capacity; i++) {
 		fprintf(stream, "%x ", bl->memory[i]);
 	}
 	fprintf(stream, "\n");
