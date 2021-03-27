@@ -90,6 +90,25 @@ Trap blvm_print_mem(Blvm *bl) {
 	return TRAP_OK;
 }
 
+Trap blvm_write(Blvm *bl) {
+	if( bl->sp < 2 )
+		return TRAP_STACK_UNDERFLOW;
+
+	uint64_t addr = bl->stack[bl->sp - 2].u64;
+	uint64_t size = bl->stack[bl->sp - 1].u64;
+
+	if( addr >= BLISP_STATIC_MEMORY_CAPACITY || size >= BLISP_STATIC_MEMORY_CAPACITY )
+		return TRAP_ILLEGAL_MEMORY_ACCESS;
+
+	if( (addr + size - 1) >= BLISP_STATIC_MEMORY_CAPACITY || (addr + size) < addr)
+		return TRAP_ILLEGAL_MEMORY_ACCESS;
+
+	fwrite(&bl->memory[addr], sizeof(uint8_t), size, stdout);
+	bl->sp -= 2;
+
+	return TRAP_OK;
+}
+
 int main(int argc, const char *argv[]) {
 	Args *args = Args_New();
 	Args_Error err;
@@ -181,6 +200,15 @@ int main(int argc, const char *argv[]) {
 	}
 
 	if( (exc = blvm_push_native(&bl, blvm_print_mem)) != TRAP_OK ) {
+		fprintf(stderr, "An error occured: %s.\n", trap_as_cstr(exc));
+
+		blvm_clean(&bl);
+		Args_Free(args);
+
+		return EXIT_FAILURE;
+	}
+
+	if( (exc = blvm_push_native(&bl, blvm_write)) != TRAP_OK ) {
 		fprintf(stderr, "An error occured: %s.\n", trap_as_cstr(exc));
 
 		blvm_clean(&bl);
