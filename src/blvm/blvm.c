@@ -82,7 +82,7 @@ void blvm_dump_memory(const Blvm *bl, FILE *stream) {
 void blvm_show_state(const Blvm *bl, FILE *stream) {
 		fprintf(stream, "0x%03lX: %s", bl->ip, inst_names[bl->program[bl->ip].type]);
 
-		if( bl->program[bl->ip].type == INST_PUSH || bl->program[bl->ip].type == INST_DUP || bl->program[bl->ip].type == INST_JMP )
+		if( inst_required_operand[bl->program[bl->ip].type] )
 			fprintf(stream, " %lu", bl->program[bl->ip].operand.u64);
 
 		fprintf(stream, " (sp: 0x%03lX)\n", bl->sp);
