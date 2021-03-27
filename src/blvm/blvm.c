@@ -269,7 +269,10 @@ Trap blvm_execute_inst(Blvm *bl) {
 			if( inst.operand.u64 > bl->ns )
 				return TRAP_ILLEGAL_OPERAND;
 
-			bl->natives[inst.operand.u64](bl);
+			Trap native_err = bl->natives[inst.operand.u64](bl);
+			if( native_err != TRAP_OK) {
+				return native_err;
+			}
 			bl->ip += 1;
 
 			break;
