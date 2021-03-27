@@ -117,7 +117,17 @@ bool translate_source(BlProg *bl, const CList include_paths, const char *fname, 
 
 			StringView directive = stringview_trim(name);
 			// On what directive are we?
-			if( stringview_eq_cstr(directive, "define") ) {
+			if( stringview_eq_cstr(directive, "memory") ) {
+				StringView value = stringview_split_on_spaces(&line);
+				uint64_t cap = 0;
+
+				if( !stringview_to_ulong(value, &cap) ) {
+					fprintf(stderr, "%s:%lu: ERROR: memory instruction require a long value (got '%.*s').\n", fname, line_nb, (int)value.count, value.data);
+					return false;
+				}
+
+				bl->mem.memory_capacity = cap;
+			} else if( stringview_eq_cstr(directive, "define") ) {
 				// Extracting the label name:
 				StringView label = stringview_split_on_spaces(&line);
 				if( label.count <= 0 ) {
@@ -136,8 +146,8 @@ bool translate_source(BlProg *bl, const CList include_paths, const char *fname, 
 
 					StringView str = stringview_split(&line, '"');
 
-					if( bl->mem.memory_size + str.count >= bl->mem.memory_capacity ) {
-						fprintf(stderr, "%s:%lu: ERROR: not enough memory capacity to store the string '%.*s'.\n", fname, line_nb, (int)str.count, str.data);
+					if( bl->mem.memory_size + str.count > bl->mem.memory_capacity ) {
+						fprintf(stderr, "%s:%lu: ERROR: not enough memory capacity to store the string '%.*s' (need: %lu, available: %lu).\n", fname, line_nb, (int)str.count, str.data, bl->mem.memory_size + str.count, bl->mem.memory_capacity);
 						return false;
 					}
 
