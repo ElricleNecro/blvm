@@ -1,103 +1,55 @@
 " Vim syntax file
-" Language:	GNU Assembler
-" Maintainer:	Erik Wognsen <erik.wognsen@gmail.com>
-"		Previous maintainer:
-"		Kevin Dahlhausen <kdahlhaus@yahoo.com>
-" Last Change:	2014 Feb 04
+" Language: Basm
 
-" Thanks to Ori Avtalion for feedback on the comment markers!
+" Usage Instructions
+" Put this file in .vim/syntax/basm.vim
+" and add in your .vimrc file the next line:
+" autocmd BufRead,BufNewFile *.basm set filetype=basm
 
-" quit when a syntax file was already loaded
 if exists("b:current_syntax")
   finish
 endif
 
-let s:cpo_save = &cpo
-set cpo&vim
+syntax keyword basmTodos TODO XXX FIXME NOTE
 
-"syn case ignore
+" Language keywords
+syntax keyword basmKeywords nop push drop dup print_debug
+syntax keyword basmKeywords add sub mul div mod
+syntax keyword basmKeywords addf subf mulf divf
+syntax keyword basmKeywords jmp jif halt swap not
+syntax keyword basmKeywords eq ge gt gef
+syntax keyword basmKeywords ret call native
+syntax keyword basmKeywords and or xor shr shl bnot
+syntax keyword basmKeywords read8 read16 read32 read64
+syntax keyword basmKeywords write8 write16 write32 write64
 
-syn match blasmLabel		"[a-z_][a-z0-9_]*:"he=e-1
-syn match blasmIdentifier		"[a-z_][a-z0-9_]*"
+" Comments
+syntax region basmCommentLine start=";" end="$"   contains=basmTodos
+syntax region basmDirective start="%" end=" "
 
-" Various #'s as defined by GAS ref manual sec 3.6.2.1
-" Technically, the first decNumber def is actually octal,
-" since the value of 0-7 octal is the same as 0-7 decimal,
-" I (Kevin) prefer to map it as decimal:
-syn match decNumber		"0\+[1-7]\=[\t\n$,; ]"
-syn match decNumber		"[1-9]\d*"
-syn match octNumber		"0[0-7][0-7]\+"
-syn match hexNumber		"0[xX][0-9a-fA-F]\+"
-syn match binNumber		"0[bB][0-1]*"
+" Numbers
+syntax match basmDecInt display "\<[0-9][0-9_]*"
+syntax match basmHexInt display "\<0[xX][0-9a-fA-F][0-9_a-fA-F]*"
+syntax match basmFloat  display "\<[0-9][0-9_]*\%(\.[0-9][0-9_]*\)"
+syntax match basmOctInt  display "0[0-7][0-7]\+"
+syntax match basmHexInt  display "0[xX][0-9a-fA-F]\+"
+syntax match basmBinInt  display "0[bB][0-1]*"
 
-syn keyword blasmTodo		contained TODO
+" Strings
+syntax region basmString start=/\v"/ skip=/\v\\./ end=/\v"/
+"syntax region basmString start=/\v'/ skip=/\v\\./ end=/\v'/
 
-syn keyword nasmStdInstruction	nop push pop swap dup add sub mul div addf subf mulf divf jmp jif call ret native and or xor shr shl bot eq gt gef not read8 read16 read32 read64 write8 write16 write32 write64 halt print_debug 
+" Set highlights
+highlight default link basmTodos Todo
+highlight default link basmKeywords Keyword
+highlight default link basmCommentLine Comment
+highlight default link basmDirective PreProc
+highlight default link basmDecInt Number
+highlight default link basmHexInt Number
+highlight default link basmOctInt Number
+highlight default link basmHexInt Number
+highlight default link basmBinInt Number
+highlight default link basmFloat Float
+highlight default link basmString String
 
-" Line comment characters depend on the target architecture and command line
-" options and some comments may double as logical line number directives or
-" preprocessor commands. This situation is described at
-" http://sourceware.org/binutils/docs-2.22/as/Comments.html
-" Some line comment characters have other meanings for other targets. For
-" example, .type directives may use the `@' character which is also an ARM
-" comment marker.
-" As a compromise to accommodate what I arbitrarily assume to be the most
-" frequently used features of the most popular architectures (and also the
-" non-GNU assembly languages that use this syntax file because their asm files
-" are also named *.asm), the following are used as line comment characters:
-syn match blasmComment		"[#;!|].*" contains=asmTodo
-
-" Side effects of this include:
-" - When `;' is used to separate statements on the same line (many targets
-"   support this), all statements except the first get highlighted as
-"   comments. As a remedy, remove `;' from the above.
-" - ARM comments are not highlighted correctly. For ARM, uncomment the
-"   following two lines and comment the one above.
-"syn match asmComment		"@.*" contains=asmTodo
-"syn match asmComment		"^#.*" contains=asmTodo
-
-" Advanced users of specific architectures will probably want to change the
-" comment highlighting or use a specific, more comprehensive syntax file.
-
-syn match blasmInclude		"%include"
-
-" Assembler directives start with a '.' and may contain upper case (e.g.,
-" .ABORT), numbers (e.g., .p2align), dash (e.g., .app-file) and underscore in
-" CFI directives (e.g., .cfi_startproc). This will also match labels starting
-" with '.', including the GCC auto-generated '.L' labels.
-syn match blasmDirective		"%[A-Za-z][0-9A-Za-z-_]*"
-
-syn match	blasmSpecial	display contained "\\\(x\x\+\|\o\{1,3}\|.\|$\)"
-syn match	blasmFormat		display "%\(\d\+\$\)\=[-+' #0*]*\(\d*\|\*\|\*\d\+\$\)\(\.\(\d*\|\*\|\*\d\+\$\)\)\=\([hlLjzt]\|ll\|hh\)\=\([aAbdiuoxXDOUfFeEgGcCsSpn]\|\[\^\=.[^]]*\]\)" contained
-syn region	blasmString		start=+"+ end=+"+ contains=cSpecial,cFormat,@Spell extend
-
-syn case match
-
-" Define the default highlighting.
-" Only when an item doesn't have highlighting yet
-
-" The default methods for highlighting.  Can be overridden later
-hi def link blasmLabel	Label
-hi def link blasmComment	Comment
-hi def link blasmTodo	Todo
-hi def link blasmDirective	Statement
-
-hi def link blasmInclude	Include
-
-hi def link hexNumber	Number
-hi def link decNumber	Number
-hi def link octNumber	Number
-hi def link binNumber	Number
-
-hi def link blasmIdentifier	Identifier
-
-hi def link blasmString		String
-
-hi def link nasmStdInstruction	Statement
-
-let b:current_syntax = "blasm"
-
-let &cpo = s:cpo_save
-unlet s:cpo_save
-
-" vim: ts=8
+let b:current_syntax = "basm"
