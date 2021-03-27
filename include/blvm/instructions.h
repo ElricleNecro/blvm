@@ -35,7 +35,13 @@ typedef enum insttype_e {
 	INST_EQ,
 	INST_GT,
 	INST_GE,
+	INST_LT,
+	INST_LE,
+	INST_NE,
+	INST_GTF,
 	INST_GEF,
+	INST_LTF,
+	INST_LEF,
 	INST_NOT,
 
 	INST_AND,

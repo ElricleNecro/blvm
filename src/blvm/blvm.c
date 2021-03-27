@@ -304,11 +304,65 @@ Trap blvm_execute_inst(Blvm *bl) {
 			bl->ip += 1;
 			break;
 
+		case INST_LT:
+			if( bl->sp < 2 )
+				return TRAP_STACK_UNDERFLOW;
+
+			bl->stack[bl->sp - 2].u64 = bl->stack[bl->sp - 1].u64 < bl->stack[bl->sp - 2].u64;
+			bl->sp -= 1;
+			bl->ip += 1;
+			break;
+
+		case INST_LE:
+			if( bl->sp < 2 )
+				return TRAP_STACK_UNDERFLOW;
+
+			bl->stack[bl->sp - 2].u64 = bl->stack[bl->sp - 1].u64 <= bl->stack[bl->sp - 2].u64;
+			bl->sp -= 1;
+			bl->ip += 1;
+			break;
+
+		case INST_NE:
+			if( bl->sp < 2 )
+				return TRAP_STACK_UNDERFLOW;
+
+			bl->stack[bl->sp - 2].u64 = bl->stack[bl->sp - 1].u64 != bl->stack[bl->sp - 2].u64;
+			bl->sp -= 1;
+			bl->ip += 1;
+			break;
+
+		case INST_GTF:
+			if( bl->sp < 2 )
+				return TRAP_STACK_UNDERFLOW;
+
+			bl->stack[bl->sp - 2].u64 = bl->stack[bl->sp - 1].f64 > bl->stack[bl->sp - 2].f64;
+			bl->sp -= 1;
+			bl->ip += 1;
+			break;
+
 		case INST_GEF:
 			if( bl->sp < 2 )
 				return TRAP_STACK_UNDERFLOW;
 
 			bl->stack[bl->sp - 2].u64 = bl->stack[bl->sp - 1].f64 >= bl->stack[bl->sp - 2].f64;
+			bl->sp -= 1;
+			bl->ip += 1;
+			break;
+
+		case INST_LTF:
+			if( bl->sp < 2 )
+				return TRAP_STACK_UNDERFLOW;
+
+			bl->stack[bl->sp - 2].u64 = bl->stack[bl->sp - 1].f64 < bl->stack[bl->sp - 2].f64;
+			bl->sp -= 1;
+			bl->ip += 1;
+			break;
+
+		case INST_LEF:
+			if( bl->sp < 2 )
+				return TRAP_STACK_UNDERFLOW;
+
+			bl->stack[bl->sp - 2].u64 = bl->stack[bl->sp - 1].f64 <= bl->stack[bl->sp - 2].f64;
 			bl->sp -= 1;
 			bl->ip += 1;
 			break;
