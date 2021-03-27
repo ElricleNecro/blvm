@@ -1,4 +1,5 @@
 %include "natives.blhasm"
+%memory 13
 %define hello "Hello, World"
 
 push hello
