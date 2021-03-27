@@ -12,6 +12,7 @@ const char *inst_names[] = {
 	[INST_SUB]         = "sub",
 	[INST_MUL]         = "mul",
 	[INST_DIV]         = "div",
+	[INST_MOD]         = "mod",
 
 	[INST_ADDF]        = "addf",
 	[INST_SUBF]        = "subf",
@@ -34,6 +35,7 @@ const char *inst_names[] = {
 
 	[INST_EQ]          = "eq",
 	[INST_GT]          = "gt",
+	[INST_GE]          = "ge",
 	[INST_GEF]         = "gef",
 	[INST_NOT]         = "not",
 
@@ -64,6 +66,7 @@ const bool inst_required_operand[] = {
 	[INST_SUB]         = false,
 	[INST_MUL]         = false,
 	[INST_DIV]         = false,
+	[INST_MOD]         = false,
 
 	[INST_ADDF]        = false,
 	[INST_SUBF]        = false,
@@ -79,6 +82,7 @@ const bool inst_required_operand[] = {
 
 	[INST_EQ]          = false,
 	[INST_GT]          = false,
+	[INST_GE]          = false,
 	[INST_GEF]         = false,
 	[INST_NOT]         = false,
 

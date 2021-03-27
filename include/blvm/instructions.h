@@ -18,6 +18,7 @@ typedef enum insttype_e {
 	INST_SUB,
 	INST_MUL,
 	INST_DIV,
+	INST_MOD,
 
 	INST_ADDF,
 	INST_SUBF,
@@ -33,6 +34,7 @@ typedef enum insttype_e {
 
 	INST_EQ,
 	INST_GT,
+	INST_GE,
 	INST_GEF,
 	INST_NOT,
 
