@@ -24,6 +24,8 @@ bool stringview_eq(StringView a, StringView b);
 bool stringview_eq_cstr(StringView a, const char *b);
 bool stringview_endwith(StringView sv, const char end);
 bool stringview_startwith(StringView sv, const char start);
+bool stringview_to_ulong(StringView sv, unsigned long *result);
+bool stringview_to_long(StringView sv, long *result);
 int stringview_to_int(StringView sv);
 
 StringView load_file(const char *fpath);

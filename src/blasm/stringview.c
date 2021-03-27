@@ -114,6 +114,30 @@ bool stringview_startwith(StringView sv, const char start) {
 	return false;
 }
 
+bool stringview_to_long(StringView sv, long *result) {
+	char *endptr = NULL;
+
+	*result = strtol(sv.data, &endptr, 0);
+
+	if( (size_t)(endptr - sv.data) != sv.count ) {
+		return false;
+	}
+
+	return true;
+}
+
+bool stringview_to_ulong(StringView sv, unsigned long *result) {
+	char *endptr = NULL;
+
+	*result = strtoul(sv.data, &endptr, 0);
+
+	if( (size_t)(endptr - sv.data) != sv.count ) {
+		return false;
+	}
+
+	return true;
+}
+
 int stringview_to_int(StringView sv) {
 	int result = 0;
 
