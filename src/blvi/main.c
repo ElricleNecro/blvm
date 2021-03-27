@@ -115,8 +115,10 @@ int main(int argc, const char *argv[]) {
 
 	int limit = -1;
 	bool debug = false;
+	bool dump_mem = false;
 	Args_Add(args, "-l", "--limit", T_INT, &limit, "Maximum number of instruction to run.");
 	Args_Add(args, "-d", "--debug-mode", T_BOOL, &debug, "Print the VM state at each step.");
+	Args_Add(args, NULL, "--dump-mem", T_BOOL, &dump_mem, "Also dump memory when in debug mode.");
 
 	err = Args_Parse(args, argc, argv);
 	if( err == TREAT_ERROR ) {
@@ -229,6 +231,8 @@ int main(int argc, const char *argv[]) {
 	} else {
 		while( limit != 0 && ! bl.halt ) {
 			blvm_dump_stack(&bl, stderr);
+			if( dump_mem )
+				blvm_dump_memory(&bl, stderr);
 			blvm_show_state(&bl, stderr);
 
 			fputs("\n", stderr);
