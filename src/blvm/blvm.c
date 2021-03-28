@@ -88,6 +88,18 @@ void blvm_show_state(const Blvm *bl, FILE *stream) {
 		fprintf(stream, " (sp: 0x%03lX)\n", bl->sp);
 }
 
+#ifndef OPERATION
+#define OPERATION(bl, in, out, op)					\
+	do {								\
+		if( (bl)->sp < 2 )					\
+			return TRAP_STACK_UNDERFLOW;			\
+									\
+		(bl)->stack[(bl)->sp - 2].out = (bl)->stack[(bl)->sp - 2].in op (bl)->stack[(bl)->sp - 1].in;	\
+		(bl)->sp -= 1;						\
+		(bl)->ip += 1;						\
+	} while(false)
+#endif
+
 Trap blvm_execute_inst(Blvm *bl) {
 	if( bl->ip >= bl->program_size )
 		return TRAP_ILLEGAL_INST_ACCESS;
@@ -140,93 +152,45 @@ Trap blvm_execute_inst(Blvm *bl) {
 			break;
 
 		case INST_ADD:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
-			bl->stack[bl->sp - 2].u64 += bl->stack[bl->sp - 1].u64;
-			bl->sp -= 1;
-			bl->ip += 1;
+			OPERATION(bl, u64, u64, +);
 			break;
 
 		case INST_SUB:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
-			bl->stack[bl->sp - 2].u64 -= bl->stack[bl->sp - 1].u64;
-			bl->sp -= 1;
-			bl->ip += 1;
+			OPERATION(bl, u64, u64, -);
 			break;
 
 		case INST_MUL:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
-			bl->stack[bl->sp - 2].u64 *= bl->stack[bl->sp - 1].u64;
-			bl->sp -= 1;
-			bl->ip += 1;
+			OPERATION(bl, u64, u64, *);
 			break;
 
 		case INST_DIV:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
 			if( bl->stack[bl->sp - 1].u64 == 0 )
 				return TRAP_DIV_BY_ZERO;
 
-			bl->stack[bl->sp - 2].u64 /= bl->stack[bl->sp - 1].u64;
-			bl->sp -= 1;
-			bl->ip += 1;
+			OPERATION(bl, u64, u64, /);
 			break;
 
 		case INST_MOD:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
-			if( bl->stack[bl->sp - 1].u64 == 0 )
-				return TRAP_DIV_BY_ZERO;
-
-			bl->stack[bl->sp - 2].u64 %= bl->stack[bl->sp - 1].u64;
-			bl->sp -= 1;
-			bl->ip += 1;
+			OPERATION(bl, u64, u64, %);
 			break;
 
 		case INST_ADDF:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
-			bl->stack[bl->sp - 2].f64 += bl->stack[bl->sp - 1].f64;
-			bl->sp -= 1;
-			bl->ip += 1;
+			OPERATION(bl, f64, f64, +);
 			break;
 
 		case INST_SUBF:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
-			bl->stack[bl->sp - 2].f64 -= bl->stack[bl->sp - 1].f64;
-			bl->sp -= 1;
-			bl->ip += 1;
+			OPERATION(bl, f64, f64, -);
 			break;
 
 		case INST_MULF:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
-			bl->stack[bl->sp - 2].f64 *= bl->stack[bl->sp - 1].f64;
-			bl->sp -= 1;
-			bl->ip += 1;
+			OPERATION(bl, f64, f64, *);
 			break;
 
 		case INST_DIVF:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
 			if( bl->stack[bl->sp - 1].f64 == 0.0 )
 				return TRAP_DIV_BY_ZERO;
 
-			bl->stack[bl->sp - 2].f64 /= bl->stack[bl->sp - 1].f64;
-			bl->sp -= 1;
-			bl->ip += 1;
+			OPERATION(bl, f64, f64, /);
 			break;
 
 		case INST_JMP:
@@ -278,93 +242,43 @@ Trap blvm_execute_inst(Blvm *bl) {
 			break;
 
 		case INST_EQ:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
-			bl->stack[bl->sp - 2].u64 = bl->stack[bl->sp - 1].u64 == bl->stack[bl->sp - 2].u64;
-			bl->sp -= 1;
-			bl->ip += 1;
+			OPERATION(bl, u64, u64, ==);
 			break;
 
 		case INST_GT:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
-			bl->stack[bl->sp - 2].u64 = bl->stack[bl->sp - 1].u64 > bl->stack[bl->sp - 2].u64;
-			bl->sp -= 1;
-			bl->ip += 1;
+			OPERATION(bl, u64, u64, >);
 			break;
 
 		case INST_GE:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
-			bl->stack[bl->sp - 2].u64 = bl->stack[bl->sp - 1].u64 >= bl->stack[bl->sp - 2].u64;
-			bl->sp -= 1;
-			bl->ip += 1;
+			OPERATION(bl, u64, u64, >=);
 			break;
 
 		case INST_LT:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
-			bl->stack[bl->sp - 2].u64 = bl->stack[bl->sp - 1].u64 < bl->stack[bl->sp - 2].u64;
-			bl->sp -= 1;
-			bl->ip += 1;
+			OPERATION(bl, u64, u64, <);
 			break;
 
 		case INST_LE:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
-			bl->stack[bl->sp - 2].u64 = bl->stack[bl->sp - 1].u64 <= bl->stack[bl->sp - 2].u64;
-			bl->sp -= 1;
-			bl->ip += 1;
+			OPERATION(bl, u64, u64, <=);
 			break;
 
 		case INST_NE:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
-			bl->stack[bl->sp - 2].u64 = bl->stack[bl->sp - 1].u64 != bl->stack[bl->sp - 2].u64;
-			bl->sp -= 1;
-			bl->ip += 1;
+			OPERATION(bl, u64, u64, !=);
 			break;
 
 		case INST_GTF:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
-			bl->stack[bl->sp - 2].u64 = bl->stack[bl->sp - 1].f64 > bl->stack[bl->sp - 2].f64;
-			bl->sp -= 1;
-			bl->ip += 1;
+			OPERATION(bl, f64, u64, >);
 			break;
 
 		case INST_GEF:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
-			bl->stack[bl->sp - 2].u64 = bl->stack[bl->sp - 1].f64 >= bl->stack[bl->sp - 2].f64;
-			bl->sp -= 1;
-			bl->ip += 1;
+			OPERATION(bl, f64, u64, >=);
 			break;
 
 		case INST_LTF:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
-			bl->stack[bl->sp - 2].u64 = bl->stack[bl->sp - 1].f64 < bl->stack[bl->sp - 2].f64;
-			bl->sp -= 1;
-			bl->ip += 1;
+			OPERATION(bl, f64, u64, <);
 			break;
 
 		case INST_LEF:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
-			bl->stack[bl->sp - 2].u64 = bl->stack[bl->sp - 1].f64 <= bl->stack[bl->sp - 2].f64;
-			bl->sp -= 1;
-			bl->ip += 1;
+			OPERATION(bl, f64, u64, <=);
 			break;
 
 		case INST_NOT:
@@ -376,58 +290,23 @@ Trap blvm_execute_inst(Blvm *bl) {
 			break;
 
 		case INST_AND:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
-			bl->stack[bl->sp - 2].u64 &= bl->stack[bl->sp - 1].u64;
-
-			bl->sp -= 1;
-			bl->ip += 1;
-
+			OPERATION(bl, u64, u64, &);
 			break;
 
 		case INST_OR:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
-			bl->stack[bl->sp - 2].u64 |= bl->stack[bl->sp - 1].u64;
-
-			bl->sp -= 1;
-			bl->ip += 1;
-
+			OPERATION(bl, u64, u64, |);
 			break;
 
 		case INST_XOR:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
-			bl->stack[bl->sp - 2].u64 ^= bl->stack[bl->sp - 1].u64;
-
-			bl->sp -= 1;
-			bl->ip += 1;
-
+			OPERATION(bl, u64, u64, ^);
 			break;
 
 		case INST_SHR:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
-			bl->stack[bl->sp - 2].u64 >>= bl->stack[bl->sp - 1].u64;
-
-			bl->sp -= 1;
-			bl->ip += 1;
-
+			OPERATION(bl, u64, u64, >>);
 			break;
 
 		case INST_SHL:
-			if( bl->sp < 2 )
-				return TRAP_STACK_UNDERFLOW;
-
-			bl->stack[bl->sp - 2].u64 <<= bl->stack[bl->sp - 1].u64;
-
-			bl->sp -= 1;
-			bl->ip += 1;
-
+			OPERATION(bl, u64, u64, <<);
 			break;
 
 		case INST_BNOT:
