@@ -17,11 +17,13 @@ syntax keyword basmKeywords nop push drop dup print_debug
 syntax keyword basmKeywords add sub mul div mod
 syntax keyword basmKeywords addf subf mulf divf
 syntax keyword basmKeywords jmp jif halt swap not
-syntax keyword basmKeywords eq ge gt gef
+syntax keyword basmKeywords eq ge gt le lt ne gef
+syntax keyword basmKeywords gef gtf lef ltf
 syntax keyword basmKeywords ret call native
 syntax keyword basmKeywords and or xor shr shl bnot
 syntax keyword basmKeywords read8 read16 read32 read64
 syntax keyword basmKeywords write8 write16 write32 write64
+syntax keyword basmKeywords i2f u2f f2i f2u
 
 " Comments
 syntax region basmCommentLine start=";" end="$"   contains=basmTodos
