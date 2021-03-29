@@ -55,6 +55,11 @@ const char *inst_names[] = {
 	[INST_WRITE32]     = "write32",
 	[INST_WRITE64]     = "write64",
 
+	[INST_I2F]         = "i2f",
+	[INST_U2F]         = "u2f",
+	[INST_F2I]         = "f2i",
+	[INST_F2U]         = "f2u",
+
 	[INST_HALT]        = "halt",
 
 	[INST_PRINT_DEBUG] = "print_debug",
@@ -114,6 +119,11 @@ const bool inst_required_operand[] = {
 	[INST_WRITE16]     = false,
 	[INST_WRITE32]     = false,
 	[INST_WRITE64]     = false,
+
+	[INST_I2F]         = false,
+	[INST_U2F]         = false,
+	[INST_F2I]         = false,
+	[INST_F2U]         = false,
 
 	[INST_HALT]        = false,
 

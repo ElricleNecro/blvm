@@ -61,6 +61,11 @@ typedef enum insttype_e {
 	INST_WRITE32,
 	INST_WRITE64,
 
+	INST_I2F,
+	INST_U2F,
+	INST_F2I,
+	INST_F2U,
+
 	INST_HALT,
 
 	INST_PRINT_DEBUG,

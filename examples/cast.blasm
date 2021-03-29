@@ -1,0 +1,6 @@
+%include "natives.blhasm"
+
+push 3.14152
+f2i
+native print_i64
+halt

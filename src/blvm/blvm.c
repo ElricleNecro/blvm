@@ -100,6 +100,18 @@ void blvm_show_state(const Blvm *bl, FILE *stream) {
 	} while(false)
 #endif
 
+#ifndef CAST
+#define CAST(bl, src, dst, cast) \
+	do {										\
+		if( (bl)->sp < 1 )							\
+			return TRAP_STACK_UNDERFLOW;					\
+											\
+		(bl)->stack[(bl)->sp - 1].dst = cast (bl)->stack[(bl)->sp - 1].src;	\
+											\
+		(bl)->ip += 1;								\
+	} while(false);
+#endif
+
 Trap blvm_execute_inst(Blvm *bl) {
 	if( bl->ip >= bl->program_size )
 		return TRAP_ILLEGAL_INST_ACCESS;
@@ -457,6 +469,22 @@ Trap blvm_execute_inst(Blvm *bl) {
 				bl->ip += 1;
 			}
 
+			break;
+
+		case INST_I2F:
+			CAST(bl, i64, f64, (double));
+			break;
+
+		case INST_U2F:
+			CAST(bl, u64, f64, (double));
+			break;
+
+		case INST_F2I:
+			CAST(bl, f64, i64, (int64_t));
+			break;
+
+		case INST_F2U:
+			CAST(bl, f64, u64, (uint64_t)(int64_t));
 			break;
 
 		case INST_HALT:
