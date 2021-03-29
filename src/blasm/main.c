@@ -17,6 +17,10 @@
 #define BLASM_PREPRO_SYMBOL '%'
 #endif
 
+#ifndef BLASM_INCLUDE_LEVEL_MAX
+#define BLASM_INCLUDE_LEVEL_MAX 64
+#endif
+
 typedef struct _STRUCT_OPTIONS bl_file_program {
 	Inst *program;
 	uint64_t program_size;
@@ -31,6 +35,8 @@ typedef struct _STRUCT_OPTIONS bl_file_memory {
 typedef struct blprog_t {
 	BlProgram prog;
 	BlMemory mem;
+
+	size_t include_level; 		// To avoid include loop
 } BlProg;
 
 void blprog_clean(BlProg *bl) {
@@ -98,6 +104,11 @@ char* search_file(const CList paths, StringView include) {
 }
 
 bool translate_source(BlProg *bl, const CList include_paths, const char *fname, StringView src, Records *records) {
+	if( bl->include_level >= BLASM_INCLUDE_LEVEL_MAX ) {
+		fprintf(stderr, "%s: Too many include level (gone through %lu include).", fname, bl->include_level);
+		return false;
+	}
+
 	for(size_t line_nb = 1; src.count > 0; line_nb++) {
 		StringView line = stringview_split(&src, '\n');
 		line = stringview_trim(line);
@@ -193,6 +204,7 @@ bool translate_source(BlProg *bl, const CList include_paths, const char *fname, 
 				}
 
 				StringView included = load_file(include_file);
+				bl->include_level += 1;
 				if( !translate_source(bl, include_paths, include_file, included, records) ) {
 					fprintf(stderr, "%s:%lu: ERROR: error in included file '%.*s'.\n", fname, line_nb, (int)name.count, name.data);
 
@@ -200,6 +212,7 @@ bool translate_source(BlProg *bl, const CList include_paths, const char *fname, 
 					free(include_file);
 					return false;
 				}
+				bl->include_level -= 1;
 
 				free(included.data);
 				free(include_file);
