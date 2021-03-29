@@ -8,19 +8,20 @@ errors:
 	halt
 
 main:
-	push 10
-	native alloc
+	push 10		; [10]
+	native alloc	; [addr]
 
-	dup 0
-	push 0
-	eq
-	jif errors
+	dup 0		; [addr, addr]
+	push 0		; [addr, addr, 0]
+	eq		; [addr, ?]
+	jif errors	; [addr]
 
-	native print_ptr
+	dup 0		; [addr, addr]
+	native print_ptr; [addr]
 
-	native free
+	native free	; []
 
-	push 3.0
-	native print_f64
+	push 3.0	; [3.0]
+	native print_f64; []
 
 	halt
