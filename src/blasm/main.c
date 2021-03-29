@@ -237,7 +237,7 @@ bool translate_source(BlProg *bl, const CList include_paths, const char *fname, 
 					return false;
 				} else if( !stringview_number_litteral(operand, &inst.operand) ) {
 					// If we cannot convert it, it may be a label, so store it to be replaced later:
-					records_push_unresolved(records, bl->prog.program_size, operand);
+					records_push_unresolved(records, bl->prog.program_size, operand, cstr_as_stringview((char*)fname), line_nb);
 				}
 			}
 
@@ -253,7 +253,7 @@ bool translate_source(BlProg *bl, const CList include_paths, const char *fname, 
 		bl->prog.program[records->jmps[idx].addr].operand = records_find_label(*records, records->jmps[idx].name);
 
 		if( bl->prog.program[records->jmps[idx].addr].operand.u64 == UINT64_MAX ) {
-			fprintf(stderr, "%s: ERROR: undefined label '%.*s'.\n", fname, (int)records->jmps[idx].name.count, records->jmps[idx].name.data);
+			fprintf(stderr, "%.*s:%lu: ERROR: undefined label '%.*s'.\n", (int)records->jmps[idx].fname.count, records->jmps[idx].fname.data, records->jmps[idx].src_loc, (int)records->jmps[idx].name.count, records->jmps[idx].name.data);
 			return false;
 		}
 	}

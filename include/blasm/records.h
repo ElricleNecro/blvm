@@ -12,6 +12,9 @@ typedef struct label_t {
 typedef struct unresolved_t {
 	uint64_t addr;
 	StringView name;
+
+	StringView fname;
+	size_t src_loc;
 } Unresolved;
 
 typedef struct records_t {
@@ -24,7 +27,7 @@ typedef struct records_t {
 
 Word records_find_label(Records records, StringView name);
 bool records_push_label(Records *records, StringView name, Word word);
-void records_push_unresolved(Records *records, uint64_t addr, StringView name);
+void records_push_unresolved(Records *records, uint64_t addr, StringView name, StringView fname, size_t loc);
 void records_free(Records *records);
 
 #endif

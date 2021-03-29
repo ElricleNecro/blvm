@@ -19,14 +19,16 @@ bool records_push_label(Records *records, StringView name, Word word) {
 	return true;
 }
 
-void records_push_unresolved(Records *records, uint64_t addr, StringView name) {
+void records_push_unresolved(Records *records, uint64_t addr, StringView name, StringView fname, size_t loc) {
 	records->jmps = realloc(records->jmps, (records->jmps_size + 1) * sizeof(struct unresolved_t));
-	records->jmps[records->jmps_size++] = (Unresolved){.addr = addr, .name = stringview_memcopy(name)};
+	records->jmps[records->jmps_size++] = (Unresolved){.addr = addr, .name = stringview_memcopy(name), .fname = stringview_memcopy(fname), .src_loc = loc};
 }
 
 void records_free(Records *records) {
-	for(size_t idx=0; idx < records->jmps_size; idx++)
+	for(size_t idx=0; idx < records->jmps_size; idx++) {
 		free(records->jmps[idx].name.data);
+		free(records->jmps[idx].fname.data);
+	}
 	free(records->jmps), records->jmps = NULL, records->jmps_size = 0;
 	for(size_t idx=0; idx < records->labels_size; idx++)
 		free(records->labels[idx].name.data);
