@@ -69,12 +69,7 @@ int main(int argc, const char *argv[]) {
 
 		free(free_lst);
 	}
-	for(CList tmp = include_paths_opt; tmp != NULL; ) {
-		CList free_lst = tmp;
-		tmp = tmp->next;
-
-		free(free_lst);
-	}
+	clist_free(include_paths_opt);
 	Args_Free(args);
 
 	return EXIT_SUCCESS;
