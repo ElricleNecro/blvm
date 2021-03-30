@@ -192,3 +192,45 @@ project "deblasm"
 	filter "configurations:Release"
 		optimize "On"
 		flags { "LinkTimeOptimization", "FatalWarnings" }
+
+project "blasm2x86"
+	filename ".asm_x86"
+	kind "ConsoleApp"
+
+	location "build/"
+	targetdir "build/%{cfg.buildcfg}/bin"
+
+	files { "src/%{prj.name}/**.c" }
+
+	includedirs {
+		"include/blvm",
+		"include/%{prj.name}",
+		".submodule/ParseArgsC/include/",
+	}
+
+	links {
+		"blvm",
+		"ParseArgsC",
+	}
+
+	libdirs {
+		"build/blvm/lib",
+		"build/ParseArgsC/lib",
+	}
+
+	filter "system:windows"
+		systemversion "latest"
+		staticruntime "On"
+
+	filter "system:linux"
+		systemversion "latest"
+		pic "On"
+		--staticruntime "On"
+
+	filter "configurations:Debug"
+		defines { "DEBUG" }
+		symbols "On"
+
+	filter "configurations:Release"
+		optimize "On"
+		flags { "LinkTimeOptimization", "FatalWarnings" }
