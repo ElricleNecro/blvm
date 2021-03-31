@@ -106,7 +106,15 @@ int main(int argc, const char **argv) {
 
 
 			case INST_ADD:
-				assert(false && "INST_ADD compilation is not yet implemented.");
+				printf("\t;; add\n");
+				printf("\tmov rsi,[stack_top]\n");
+				printf("\tsub rsi,BLISP_WORD_SIZE\n");
+				printf("\tmov rbx,[rsi]\n");
+				printf("\tsub rsi,BLISP_WORD_SIZE\n");
+				printf("\tmov rax,[rsi]\n");
+				printf("\tadd rax,rbx\n");
+				printf("\tmov [rsi],rax\n");
+				printf("\tmov [stack_top],rsi\n");
 				break;
 
 			case INST_SUB:
