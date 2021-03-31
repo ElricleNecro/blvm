@@ -4,6 +4,10 @@
 #include <assert.h>
 #include <stdint.h>
 
+#ifndef BLISP_WORD_SIZE
+#define BLISP_WORD_SIZE 8
+#endif
+
 #ifndef BLISP_STACK_CAPACITY
 #define BLISP_STACK_CAPACITY 1024
 #endif
@@ -48,6 +52,6 @@ typedef union word_u {
 	void *ptr;
 } Word;
 
-static_assert(sizeof(Word) == 8, "Blvm is expected to be compiled on a 64bits system.");
+static_assert(sizeof(Word) == BLISP_WORD_SIZE, "Blvm is expected to be compiled on a 64bits system.");
 
 #endif /* end of include guard: DEFINE_H_76PABUD2 */
