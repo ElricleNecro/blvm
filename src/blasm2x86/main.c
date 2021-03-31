@@ -4,6 +4,7 @@
 #include "Parser.h"
 
 #include "blvm/blvm.h"
+#include "blvm/define.h"
 #include "blvm/records.h"
 #include "blvm/stringview.h"
 #include "blvm/translation.h"
@@ -68,6 +69,8 @@ int main(int argc, const char **argv) {
 		goto error;
 
 	printf("BITS 64\n");
+	printf("%%define BLISP_STACK_CAPACITY %d\n", BLISP_STACK_CAPACITY);
+	printf("%%define BLISP_WORD_SIZE %d\n", BLISP_WORD_SIZE);
 	printf("%%define SYS_EXIT 60\n");
 	printf("segment .text\n");
 	printf("global _start\n");
@@ -83,7 +86,10 @@ int main(int argc, const char **argv) {
 
 
 			case INST_PUSH:
-				assert(false && "INST_PUSH compilation is not yet implemented.");
+				printf("\t;; push %lu\n", instruction.operand.u64);
+				printf("\tmov rsi,[stack_top]\n");
+				printf("\tmov QWORD [rsi],%lu\n", instruction.operand.u64);
+				printf("\tadd QWORD [stack_top], BLISP_WORD_SIZE\n");
 				break;
 
 			case INST_POP:
@@ -281,6 +287,7 @@ int main(int argc, const char **argv) {
 
 
 			case INST_HALT:
+				printf("\t;; halt\n");
 				printf("\tmov rax, SYS_EXIT\n");
 				printf("\tmov rdi, 0\n");
 				printf("\tsyscall\n");
@@ -297,6 +304,11 @@ int main(int argc, const char **argv) {
 				assert(false && "Unknown instruction");
 		}
 	}
+
+	printf("segment .data\n");
+	printf("stack_top: dq stack\n");
+	printf("segment .bss\n");
+	printf("stack: resq BLISP_STACK_CAPACITY\n");
 
 error:
 	blprog_clean(&bl);
