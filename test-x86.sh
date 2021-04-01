@@ -2,6 +2,6 @@
 
 set -e
 
-blasm2x86 -I lib examples/halt.blasm > /tmp/halt.basm.asm
-nasm -felf64 /tmp/halt.basm.asm
-ld -o /tmp/halt /tmp/halt.basm.o
+blasm2x86 -I lib $1 > $(basename $1).asm
+nasm -g -wall -felf64 $(basename $1).asm
+ld -o $(basename ${1%.*}) $(basename $1).o
