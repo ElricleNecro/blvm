@@ -132,7 +132,8 @@ int main(int argc, const char **argv) {
 				break;
 
 			case INST_POP:
-				assert(false && "INST_POP compilation is not yet implemented.");
+				printf("\t;; pop\n");
+				printf("\tsub QWORD [stack_top], BLISP_WORD_SIZE\n");
 				break;
 
 			case INST_SWAP:
