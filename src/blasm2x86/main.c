@@ -114,6 +114,7 @@ int main(int argc, const char **argv) {
 				printf("\tmov rax,[rsi]\n");
 				printf("\tadd rax,rbx\n");
 				printf("\tmov [rsi],rax\n");
+				printf("\tadd rsi,BLISP_WORD_SIZE\n");
 				printf("\tmov [stack_top],rsi\n");
 				break;
 
