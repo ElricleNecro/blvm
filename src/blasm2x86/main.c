@@ -31,6 +31,42 @@ IncludeList clist_to_include(CList include_paths_opt) {
 	return include_paths;
 }
 
+void gen_print_i64(FILE *stream) {
+	fprintf(stream, "\tprint_i64:\n");
+	fprintf(stream, "\t\t; extracting from BM stack\n");
+	fprintf(stream, "\t\tmov rsi, [stack_top]\n");
+	fprintf(stream, "\t\tsub rsi, BLISP_WORD_SIZE\n");
+	fprintf(stream, "\t\tmov rax, [rsi]\n");
+	fprintf(stream, "\t\tmov [stack_top], rsi\n");
+	fprintf(stream, "\t\t; rax has the value we need to print\n");
+	fprintf(stream, "\t\tmov rdi, 0\t; rdi is the counter of chars\n");
+	fprintf(stream, "\t\t; add new line\n");
+	fprintf(stream, "\t\tdec rsp\n");
+	fprintf(stream, "\t\tinc rdi\n");
+	fprintf(stream, "\t\tmov BYTE [rsp], 10\n");
+	fprintf(stream, "\t.loop:\n");
+	fprintf(stream, "\t\txor rdx, rdx\n");
+	fprintf(stream, "\t\tmov rbx, 10\n");
+	fprintf(stream, "\t\tdiv rbx\n");
+	fprintf(stream, "\t\tadd rdx, '0'\n");
+	fprintf(stream, "\t\tdec rsp\n");
+	fprintf(stream, "\t\tinc rdi\n");
+	fprintf(stream, "\t\tmov [rsp], dl\n");
+	fprintf(stream, "\t\tcmp rax, 0\n");
+	fprintf(stream, "\t\tjne .loop\n");
+	fprintf(stream, "\t\t; rsp is the beginning of the buffer\n");
+	fprintf(stream, "\t\t; rdi contains the size of the buf\n");
+	fprintf(stream, "\t\tmov rbx, rdi\n");
+	fprintf(stream, "\t\t; write(STDOUT, buf, buf_size)\n");
+	fprintf(stream, "\t\tmov rax, SYS_WRITE\n");
+	fprintf(stream, "\t\tmov rdi, STDOUT\n");
+	fprintf(stream, "\t\tmov rsi, rsp\n");
+	fprintf(stream, "\t\tmov rdx, rbx\n");
+	fprintf(stream, "\t\tsyscall\n");
+	fprintf(stream, "\t\tadd rsp, rbx\n");
+	fprintf(stream, "\t\tret\n");
+}
+
 int main(int argc, const char **argv) {
 	Args *args = Args_New();
 	Args_Error err;
@@ -69,11 +105,14 @@ int main(int argc, const char **argv) {
 		goto error;
 
 	printf("BITS 64\n");
-	printf("%%define BLISP_STACK_CAPACITY %d\n", BLISP_STACK_CAPACITY);
+	printf("%%define BLISP_STACK_CAPACITY %lu\n", bl.mem.memory_capacity);
 	printf("%%define BLISP_WORD_SIZE %d\n", BLISP_WORD_SIZE);
 	printf("%%define SYS_EXIT 60\n");
+	printf("%%define STDOUT 1\n");
+	printf("%%define SYS_WRITE 1\n");
 	printf("segment .text\n");
 	printf("global _start\n");
+	gen_print_i64(stdout);
 	printf("_start:\n");
 
 	for(size_t idx = 0; idx < bl.prog.program_size; idx++) {
@@ -170,7 +209,15 @@ int main(int argc, const char **argv) {
 				break;
 
 			case INST_NATIVE:
-				assert(false && "INST_NATIVE compilation is not yet implemented.");
+				printf("\t;; native %lu\n", instruction.operand.u64);
+				switch(instruction.operand.u64) {
+					case 3:
+						printf("\t;; native print_i64\n");
+						printf("\tcall print_i64\n");
+						break;
+					default:
+						assert(false && "Unsupported native function");
+				}
 				break;
 
 
