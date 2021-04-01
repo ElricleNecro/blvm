@@ -2,6 +2,6 @@
 
 set -e
 
-blasm2x86 -I lib $1 > $(basename $1).asm
+blasm2nasm -I lib $1 > $(basename $1).asm
 nasm -g -wall -felf64 $(basename $1).asm
 ld -o $(basename ${1%.*}) $(basename $1).o

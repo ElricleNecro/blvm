@@ -193,8 +193,8 @@ project "deblasm"
 		optimize "On"
 		flags { "LinkTimeOptimization", "FatalWarnings" }
 
-project "blasm2x86"
-	filename ".asm_x86"
+project "blasm2nasm"
+	filename ".asm_nasm"
 	kind "ConsoleApp"
 
 	location "build/"
