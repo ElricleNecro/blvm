@@ -136,7 +136,16 @@ int main(int argc, const char **argv) {
 				break;
 
 			case INST_SWAP:
-				assert(false && "INST_SWAP compilation is not yet implemented.");
+				printf("\t;; swap %lu\n", instruction.operand.u64);
+				printf("\tmov rsi, [stack_top]\n");
+				printf("\tsub rsi, BM_WORD_SIZE\n");
+				printf("\tmov rdi, rsi\n");
+				printf("\tsub rdi, BM_WORD_SIZE * %%%lu\n", instruction.operand.u64);
+				printf("\t;; rsi and rdi contains the addresses to swap around\n");
+				printf("\tmov rax, [rsi]\n");
+				printf("\tmov rbx, [rdi]\n");
+				printf("\tmov [rdi], rax\n");
+				printf("\tmov [rsi], rbx\n");
 				break;
 
 			case INST_DUP:
