@@ -150,7 +150,14 @@ int main(int argc, const char **argv) {
 				break;
 
 			case INST_DUP:
-				assert(false && "INST_DUP compilation is not yet implemented.");
+				printf("\t;; dup %lu\n", instruction.operand.u64);
+				printf("\tmov rsi, [stack_top]\n");
+				printf("\tmov rdi, rsi\n");
+				printf("\tsub rdi, BLISP_WORD_SIZE * (%lu + 1)\n", instruction.operand.u64);
+				printf("\tmov rax, [rdi]\n");
+				printf("\tmov [rsi], rax\n");
+				printf("\tadd rsi, BLISP_WORD_SIZE\n");
+				printf("\tmov [stack_top], rsi\n");
 				break;
 
 
