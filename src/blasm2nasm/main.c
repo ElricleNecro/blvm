@@ -33,7 +33,7 @@ IncludeList clist_to_include(CList include_paths_opt) {
 
 void gen_print_i64(FILE *stream) {
 	fprintf(stream, "\tprint_i64:\n");
-	fprintf(stream, "\t\t; extracting from BM stack\n");
+	fprintf(stream, "\t\t; extracting from BLISP stack\n");
 	fprintf(stream, "\t\tmov rsi, [stack_top]\n");
 	fprintf(stream, "\t\tsub rsi, BLISP_WORD_SIZE\n");
 	fprintf(stream, "\t\tmov rax, [rsi]\n");
@@ -139,9 +139,9 @@ int main(int argc, const char **argv) {
 			case INST_SWAP:
 				printf("\t;; swap %lu\n", instruction.operand.u64);
 				printf("\tmov rsi, [stack_top]\n");
-				printf("\tsub rsi, BM_WORD_SIZE\n");
+				printf("\tsub rsi, BLISP_WORD_SIZE\n");
 				printf("\tmov rdi, rsi\n");
-				printf("\tsub rdi, BM_WORD_SIZE * %%%lu\n", instruction.operand.u64);
+				printf("\tsub rdi, BLISP_WORD_SIZE * %%%lu\n", instruction.operand.u64);
 				printf("\t;; rsi and rdi contains the addresses to swap around\n");
 				printf("\tmov rax, [rsi]\n");
 				printf("\tmov rbx, [rdi]\n");
