@@ -194,9 +194,9 @@ int main(int argc, const char **argv) {
 				printf("\tmov rbx,[rsi]\n");
 				printf("\tsub rsi,BLISP_WORD_SIZE\n");
 				printf("\tmov rax,[rsi]\n");
-				printf("\tsub rax,rbx\n");
+				printf("\tmul rax,rbx\n");
 				printf("\tmov [rsi],rax\n");
-				printf("\tmul rsi,BLISP_WORD_SIZE\n");
+				printf("\tadd rsi,BLISP_WORD_SIZE\n");
 				printf("\tmov [stack_top],rsi\n");
 				break;
 
