@@ -1,9 +1,8 @@
 local bindings = {
 	{ 'n', "<F1>", ":make!<cr>", { noremap = false, silent = false}},
-	{ 'n', "<F2>", ":!premake5 gmake2<cr>", { noremap = false, silent = false}},
-	{ 'n', "<F3>", ":!blasm examples/fibonacci.blasm -o /tmp/fib.bl", { noremap = false, silent = false}},
-	{ 'n', "<F4>", ":!blvi /tmp/fib.bl", { noremap = false, silent = false}},
-	{ 'n', "<F5>", ":!bear -- make<cr>", { noremap = false, silent = true}},
+	{ 'n', "<F2>", ":make -C examples -B<cr>", { noremap = false, silent = false}},
+	{ 'n', "<F3>", ":!./configure<cr>", { noremap = false, silent = false}},
+	{ 'n', "<F4>", ":!./test-x86.sh %<cr>", { noremap = false, silent = false}},
 }
 
 for _, bind in ipairs(bindings) do
