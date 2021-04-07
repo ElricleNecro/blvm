@@ -188,7 +188,7 @@ int main(int argc, const char **argv) {
 				printf("\tmov rsi, [stack_top]\n");
 				printf("\tsub rsi, BLISP_WORD_SIZE\n");
 				printf("\tmov rdi, rsi\n");
-				printf("\tsub rdi, BLISP_WORD_SIZE * %%%lu\n", instruction.operand.u64);
+				printf("\tsub rdi, BLISP_WORD_SIZE * %lu\n", instruction.operand.u64);
 				printf("\t;; rsi and rdi contains the addresses to swap around\n");
 				printf("\tmov rax, [rsi]\n");
 				printf("\tmov rbx, [rdi]\n");
