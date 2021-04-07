@@ -67,6 +67,13 @@ void gen_print_i64(FILE *stream) {
 	fprintf(stream, "\t\tret\n");
 }
 
+void gen_addr_space(FILE *stream, BlProg bl) {
+	fprintf(stream, "inst_map: dq");
+	for(size_t idx = 0; idx < bl.prog.program_size; idx++) {
+		fprintf(stream, " inst_%lu,", idx);
+	}
+}
+
 int main(int argc, const char **argv) {
 	Args *args = Args_New();
 	Args_Error err;
@@ -115,8 +122,10 @@ int main(int argc, const char **argv) {
 	gen_print_i64(stdout);
 	printf("_start:\n");
 
+	size_t jmp_if_escape_count = 0;
 	for(size_t idx = 0; idx < bl.prog.program_size; idx++) {
 		Inst instruction = bl.prog.program[idx];
+		printf("inst_%lu:\n", idx);
 
 		switch(instruction.type) {
 			case INST_NOP:
@@ -227,11 +236,36 @@ int main(int argc, const char **argv) {
 
 
 			case INST_JMP:
-				assert(false && "INST_JMP compilation is not yet implemented.");
+				printf("\t;; jmp %lu\n", instruction.operand.u64);
+				printf("\tmov rsi,[stack_top]\n");
+				printf("\tsub rsi,BLISP_WORD_SIZE\n");
+				printf("\tmov rax,[rsi]\n");
+				printf("\tmov [stack_top], rsi\n");
+
+				printf("\tmov rdi, inst_map\n");
+				printf("\tadd rdi, BLISP_WORD_SIZE * %lu\n", instruction.operand.u64);
+
+				printf("\tjmp [rdi]\n");
 				break;
 
 			case INST_JIF:
-				assert(false && "INST_JIF compilation is not yet implemented.");
+				printf("\t;; jif %lu\n", instruction.operand.u64);
+				printf("\tmov rsi, [stack_top]\n");
+				printf("\tsub rsi, BLISP_WORD_SIZE\n");
+				printf("\tmov rax, [rsi]\n");
+				printf("\tmov [stack_top], rsi\n");
+
+				printf("\tcmp rax, 0\n");
+				printf("\tje jmp_if_escape_%lu\n", jmp_if_escape_count);
+
+				printf("\tmov rdi, inst_map\n");
+				printf("\tadd rdi, BLISP_WORD_SIZE * %lu\n", instruction.operand.u64);
+
+				printf("\tjmp [rdi]\n");
+				printf("jmp_if_escape_%lu:\n", jmp_if_escape_count);
+
+				jmp_if_escape_count += 1;
+
 				break;
 
 
@@ -417,6 +451,7 @@ int main(int argc, const char **argv) {
 
 	printf("segment .data\n");
 	printf("stack_top: dq stack\n");
+	gen_addr_space(stdout, bl);
 	printf("segment .bss\n");
 	printf("stack: resq BLISP_STACK_CAPACITY\n");
 
