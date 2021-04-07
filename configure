@@ -1,0 +1,6 @@
+#/usr/bin/env bash
+
+set -e
+
+premake5 gmake2
+premake5 export-compile-commands
