@@ -384,7 +384,6 @@ int main(int argc, const char **argv) {
 				break;
 
 			case INST_NOT:
-				assert(false && "INST_NOT compilation is not yet implemented.");
 				printf("\t;; not\n");
 				printf("\tmov rsi, [stack_top]\n");
 				printf("\tsub rsi, BLISP_WORD_SIZE\n");
