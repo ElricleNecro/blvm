@@ -309,6 +309,14 @@ int main(int argc, const char **argv) {
 
 			case INST_NOT:
 				assert(false && "INST_NOT compilation is not yet implemented.");
+				printf("\t;; not\n");
+				printf("\tmov rsi, [stack_top]\n");
+				printf("\tsub rsi, BLISP_WORD_SIZE\n");
+				printf("\tmov rax, [rsi]\n");
+				printf("\tcmp rax, 0\n");
+				printf("\tmov rax, 0\n");
+				printf("\tsetz al\n");
+				printf("\tmov [rsi], rax\n");
 				break;
 
 
