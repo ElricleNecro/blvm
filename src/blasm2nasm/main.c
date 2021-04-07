@@ -67,11 +67,48 @@ void gen_print_i64(FILE *stream) {
 	fprintf(stream, "\t\tret\n");
 }
 
+void gen_print_u64(FILE *stream) {
+	fprintf(stream, "\tprint_u64:\n");
+	fprintf(stream, "\t\t; extracting from BLISP stack\n");
+	fprintf(stream, "\t\tmov rsi, [stack_top]\n");
+	fprintf(stream, "\t\tsub rsi, BLISP_WORD_SIZE\n");
+	fprintf(stream, "\t\tmov rax, [rsi]\n");
+	fprintf(stream, "\t\tmov [stack_top], rsi\n");
+	fprintf(stream, "\t\t; rax has the value we need to print\n");
+	fprintf(stream, "\t\tmov rdi, 0\t; rdi is the counter of chars\n");
+	fprintf(stream, "\t\t; add new line\n");
+	fprintf(stream, "\t\tdec rsp\n");
+	fprintf(stream, "\t\tinc rdi\n");
+	fprintf(stream, "\t\tmov BYTE [rsp], 10\n");
+	fprintf(stream, "\t.loop:\n");
+	fprintf(stream, "\t\txor rdx, rdx\n");
+	fprintf(stream, "\t\tmov rbx, 10\n");
+	fprintf(stream, "\t\tdiv rbx\n");
+	fprintf(stream, "\t\tadd rdx, '0'\n");
+	fprintf(stream, "\t\tdec rsp\n");
+	fprintf(stream, "\t\tinc rdi\n");
+	fprintf(stream, "\t\tmov [rsp], dl\n");
+	fprintf(stream, "\t\tcmp rax, 0\n");
+	fprintf(stream, "\t\tjne .loop\n");
+	fprintf(stream, "\t\t; rsp is the beginning of the buffer\n");
+	fprintf(stream, "\t\t; rdi contains the size of the buf\n");
+	fprintf(stream, "\t\tmov rbx, rdi\n");
+	fprintf(stream, "\t\t; write(STDOUT, buf, buf_size)\n");
+	fprintf(stream, "\t\tmov rax, SYS_WRITE\n");
+	fprintf(stream, "\t\tmov rdi, STDOUT\n");
+	fprintf(stream, "\t\tmov rsi, rsp\n");
+	fprintf(stream, "\t\tmov rdx, rbx\n");
+	fprintf(stream, "\t\tsyscall\n");
+	fprintf(stream, "\t\tadd rsp, rbx\n");
+	fprintf(stream, "\t\tret\n");
+}
+
 void gen_addr_space(FILE *stream, BlProg bl) {
 	fprintf(stream, "inst_map: dq");
 	for(size_t idx = 0; idx < bl.prog.program_size; idx++) {
 		fprintf(stream, " inst_%lu,", idx);
 	}
+	fprintf(stream, "\n");
 }
 
 int main(int argc, const char **argv) {
@@ -120,6 +157,7 @@ int main(int argc, const char **argv) {
 	printf("segment .text\n");
 	printf("global _start\n");
 	gen_print_i64(stdout);
+	gen_print_u64(stdout);
 	printf("_start:\n");
 
 	size_t jmp_if_escape_count = 0;
@@ -283,6 +321,10 @@ int main(int argc, const char **argv) {
 					case 3:
 						printf("\t;; native print_i64\n");
 						printf("\tcall print_i64\n");
+						break;
+					case 4:
+						printf("\t;; native print_u64\n");
+						printf("\tcall print_u64\n");
 						break;
 					default:
 						assert(false && "Unsupported native function");
