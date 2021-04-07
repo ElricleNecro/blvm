@@ -257,7 +257,18 @@ int main(int argc, const char **argv) {
 
 
 			case INST_EQ:
-				assert(false && "INST_EQ compilation is not yet implemented.");
+				printf("\t;; eq\n");
+				printf("\tmov rsi,[stack_top]\n");
+				printf("\tsub rsi,BLISP_WORD_SIZE\n");
+				printf("\tmov rbx,[rsi]\n");
+				printf("\tsub rsi,BLISP_WORD_SIZE\n");
+				printf("\tmov rax,[rsi]\n");
+				printf("\tcmp rax,rbx\n");
+				printf("\tmov rax,0\n");
+				printf("\tsetz al\n");
+				printf("\tmov [rsi],rax\n");
+				printf("\tadd rsi,BLISP_WORD_SIZE\n");
+				printf("\tmov [stack_top],rsi\n");
 				break;
 
 			case INST_GT:
