@@ -100,7 +100,8 @@ int main(int argc, const char **argv) {
 
 		switch(instruction.type) {
 			case INST_NOP:
-				assert(false && "INST_NOP compilation is not yet implemented.");
+				printf("\t;; nop\n");
+				printf("\tnop\n");
 				break;
 
 
