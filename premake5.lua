@@ -193,32 +193,6 @@ project "deblasm"
 		optimize "On"
 		flags { "LinkTimeOptimization", "FatalWarnings" }
 
-project "xxd"
-	filename ".xxd"
-	kind "ConsoleApp"
-
-	location "build/"
-	targetdir "build/%{cfg.buildcfg}/bin"
-
-	files { "src/%{prj.name}/**.c" }
-
-	filter "system:windows"
-		systemversion "latest"
-		staticruntime "On"
-
-	filter "system:linux"
-		systemversion "latest"
-		pic "On"
-		--staticruntime "On"
-
-	filter "configurations:Debug"
-		defines { "DEBUG" }
-		symbols "On"
-
-	filter "configurations:Release"
-		optimize "On"
-		flags { "LinkTimeOptimization", "FatalWarnings" }
-
 project "blasm2nasm"
 	filename ".asm_nasm"
 	kind "ConsoleApp"
@@ -244,7 +218,7 @@ project "blasm2nasm"
 
 		-- One or more commands to run (required)
 		buildcommands {
-			'%{cfg.buildcfg}/bin/xxd -i "%{file.relpath}" > "../include/%{prj.name}/generated/%{file.basename}.h"',
+			'xxd -i "%{file.relpath}" > "../include/%{prj.name}/generated/%{file.basename}.h"',
 		}
 
 		-- One or more outputs resulting from the build (required)
