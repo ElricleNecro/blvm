@@ -12,7 +12,7 @@ build:
   # instead of calling g++ directly you can also use some build toolkit like make
   # install the necessary build tools when needed
   before_script:
-    - apt update && apt -y install make
+    - apt update && apt -y install make xxd
   script:
     - .bin/premake5 gmake2
     - make config=release
