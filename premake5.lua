@@ -193,8 +193,8 @@ project "deblasm"
 		optimize "On"
 		flags { "LinkTimeOptimization", "FatalWarnings" }
 
-project "blasm2nasm"
-	filename ".asm_nasm"
+project "xxd"
+	filename ".xxd"
 	kind "ConsoleApp"
 
 	location "build/"
@@ -202,11 +202,31 @@ project "blasm2nasm"
 
 	files { "src/%{prj.name}/**.c" }
 
-	includedirs {
-		"include/blvm",
-		"include/%{prj.name}",
-		".submodule/ParseArgsC/include/",
-	}
+	filter "system:windows"
+		systemversion "latest"
+		staticruntime "On"
+
+	filter "system:linux"
+		systemversion "latest"
+		pic "On"
+		--staticruntime "On"
+
+	filter "configurations:Debug"
+		defines { "DEBUG" }
+		symbols "On"
+
+	filter "configurations:Release"
+		optimize "On"
+		flags { "LinkTimeOptimization", "FatalWarnings" }
+
+project "blasm2nasm"
+	filename ".asm_nasm"
+	kind "ConsoleApp"
+
+	location "build/"
+	targetdir "build/%{cfg.buildcfg}/bin"
+
+	files { "src/%{prj.name}/**.c", "asm/*", "include/blvm/**.h", "include/%{prj.name}/**.h" }
 
 	links {
 		"blvm",
@@ -217,6 +237,31 @@ project "blasm2nasm"
 		"build/blvm/lib",
 		"build/ParseArgsC/lib",
 	}
+
+	filter 'files:**.nasm'
+		-- A message to display while this build step is running (optional)
+		buildmessage 'Compiling %{file.relpath}'
+
+		-- One or more commands to run (required)
+		buildcommands {
+			'%{cfg.buildcfg}/bin/xxd -i "%{file.relpath}" > "../include/%{prj.name}/generated/%{file.basename}.h"',
+		}
+
+		-- One or more outputs resulting from the build (required)
+		buildoutputs { "../include/%{prj.name}/generated/%{file.basename}.h" }
+
+		-- One or more additional dependencies for this build command (optional)
+		--buildinputs { 'path/to/file1.ext', 'path/to/file2.ext' }
+
+	filter {}
+
+	includedirs {
+		"include/blvm",
+		"include/%{prj.name}",
+		".submodule/ParseArgsC/include/",
+		"build/%{cfg.buildcfg}/include/",
+	}
+
 
 	filter "system:windows"
 		systemversion "latest"
