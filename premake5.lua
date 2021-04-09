@@ -200,7 +200,11 @@ project "blasm2nasm"
 	location "build/"
 	targetdir "build/%{cfg.buildcfg}/bin"
 
-	files { "src/%{prj.name}/**.c", "asm/*", "include/blvm/**.h", "include/%{prj.name}/**.h" }
+	prebuildcommands {
+		"{MKDIR} %{cfg.buildcfg}/include/%{prj.name}/generated/"
+	}
+
+	files { "src/%{prj.name}/**.c", "asm/*", "include/blvm/**.h", "include/%{prj.name}/**.h", "build/%{cfg.buildcfg}/include/%{prj.name}/generated/*.h" }
 
 	links {
 		"blvm",
@@ -218,11 +222,11 @@ project "blasm2nasm"
 
 		-- One or more commands to run (required)
 		buildcommands {
-			'xxd -i "%{file.relpath}" > "../include/%{prj.name}/generated/%{file.basename}.h"',
+			'xxd -i "%{file.relpath}" > "%{cfg.buildcfg}/include/%{prj.name}/generated/%{file.basename}.h"',
 		}
 
 		-- One or more outputs resulting from the build (required)
-		buildoutputs { "../include/%{prj.name}/generated/%{file.basename}.h" }
+		buildoutputs { "%{cfg.buildcfg}/include/%{prj.name}/generated/%{file.basename}.h" }
 
 		-- One or more additional dependencies for this build command (optional)
 		--buildinputs { 'path/to/file1.ext', 'path/to/file2.ext' }
@@ -232,6 +236,7 @@ project "blasm2nasm"
 	includedirs {
 		"include/blvm",
 		"include/%{prj.name}",
+		"build/%{cfg.buildcfg}/include/%{prj.name}",
 		".submodule/ParseArgsC/include/",
 		"build/%{cfg.buildcfg}/include/",
 	}
