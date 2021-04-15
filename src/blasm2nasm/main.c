@@ -191,19 +191,67 @@ int main(int argc, const char **argv) {
 
 
 			case INST_ADDF:
-				assert(false && "INST_ADDF compilation is not yet implemented.");
+				printf("\t;; addf");
+				printf("\tmov rsi, [stack_top]\n");
+				printf("\tsub rsi, BLISP_WORD_SIZE\n");
+				printf("\tmovsd xmm1, QWORD [rsi]\n");
+				printf("\tmov [stack_top], rsi\n");
+				printf("\tmov rsi, [stack_top]\n");
+				printf("\tsub rsi, BLISP_WORD_SIZE\n");
+				printf("\tmovsd xmm0, QWORD [rsi]\n");
+				printf("\tmov [stack_top], rsi\n");
+				printf("\taddsd xmm0, xmm1\n");
+				printf("\tmov QWORD [rsi], xmm0\n");
+				printf("\tadd rsi, BLISP_WORD_SIZE\n");
+				printf("\tmov [stack_top], rsi\n");
 				break;
 
 			case INST_SUBF:
-				assert(false && "INST_SUBF compilation is not yet implemented.");
+				printf("\t;; subf");
+				printf("\tmov rsi, [stack_top]\n");
+				printf("\tsub rsi, BLISP_WORD_SIZE\n");
+				printf("\tmovsd xmm1, QWORD [rsi]\n");
+				printf("\tmov [stack_top], rsi\n");
+				printf("\tmov rsi, [stack_top]\n");
+				printf("\tsub rsi, BLISP_WORD_SIZE\n");
+				printf("\tmovsd xmm0, QWORD [rsi]\n");
+				printf("\tmov [stack_top], rsi\n");
+				printf("\tsubsd xmm0, xmm1\n");
+				printf("\tmov QWORD [rsi], xmm0\n");
+				printf("\tadd rsi, BLISP_WORD_SIZE\n");
+				printf("\tmov [stack_top], rsi\n");
 				break;
 
 			case INST_MULF:
-				assert(false && "INST_MULF compilation is not yet implemented.");
+				printf("\t;; mulf");
+				printf("\tmov rsi, [stack_top]\n");
+				printf("\tsub rsi, BLISP_WORD_SIZE\n");
+				printf("\tmovsd xmm1, QWORD [rsi]\n");
+				printf("\tmov [stack_top], rsi\n");
+				printf("\tmov rsi, [stack_top]\n");
+				printf("\tsub rsi, BLISP_WORD_SIZE\n");
+				printf("\tmovsd xmm0, QWORD [rsi]\n");
+				printf("\tmov [stack_top], rsi\n");
+				printf("\tmulsd xmm0, xmm1\n");
+				printf("\tmov QWORD [rsi], xmm0\n");
+				printf("\tadd rsi, BLISP_WORD_SIZE\n");
+				printf("\tmov [stack_top], rsi\n");
 				break;
 
 			case INST_DIVF:
-				assert(false && "INST_DIVF compilation is not yet implemented.");
+				printf("\t;; divf");
+				printf("\tmov rsi, [stack_top]\n");
+				printf("\tsub rsi, BLISP_WORD_SIZE\n");
+				printf("\tmovsd xmm1, QWORD [rsi]\n");
+				printf("\tmov [stack_top], rsi\n");
+				printf("\tmov rsi, [stack_top]\n");
+				printf("\tsub rsi, BLISP_WORD_SIZE\n");
+				printf("\tmovsd xmm0, QWORD [rsi]\n");
+				printf("\tmov [stack_top], rsi\n");
+				printf("\tdivsd xmm0, xmm1\n");
+				printf("\tmov QWORD [rsi], xmm0\n");
+				printf("\tadd rsi, BLISP_WORD_SIZE\n");
+				printf("\tmov [stack_top], rsi\n");
 				break;
 
 
