@@ -478,9 +478,17 @@ int main(int argc, const char **argv) {
 
 	printf("segment .data\n");
 	printf("stack_top: dq stack\n");
+	printf("nzero: dq -0.0\n");
+	printf("zero: dq 0.0\n");
+	printf("one: dq 1.0\n");
+	printf("half: dq 0.5\n");
+	printf("ten: dq 10.0\n");
+	printf("tenth: dq 0.1\n");
+	printf("pi: dq 3.14159265359\n");
 	gen_addr_space(stdout, bl);
 	printf("segment .bss\n");
 	printf("stack: resq BLISP_STACK_CAPACITY\n");
+	printf("x: resb 1\n");
 
 error:
 	blprog_clean(&bl);
