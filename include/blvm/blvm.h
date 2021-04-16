@@ -21,6 +21,7 @@ typedef struct _STRUCT_OPTIONS bl_file_meta {
 	uint64_t program_size;
 	uint64_t memory_size;
 	uint64_t memory_capacity;
+	uint64_t entry_point;
 } BlMeta;
 
 struct blvm_t;

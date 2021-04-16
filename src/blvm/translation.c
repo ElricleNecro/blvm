@@ -74,6 +74,8 @@ bool translate_source(BlProg *bl, const IncludeList include_paths, const char *f
 		return false;
 	}
 
+	StringView entry_point = {0};
+
 	for(size_t line_nb = 1; src.count > 0; line_nb++) {
 		StringView line = stringview_split(&src, '\n');
 		line = stringview_trim(line);
@@ -93,7 +95,9 @@ bool translate_source(BlProg *bl, const IncludeList include_paths, const char *f
 
 			StringView directive = stringview_trim(name);
 			// On what directive are we?
-			if( stringview_eq_cstr(directive, "memory") ) {
+			if( stringview_eq_cstr(directive, "entry_point") ) {
+				entry_point = stringview_split_on_spaces(&line);
+			} else if( stringview_eq_cstr(directive, "memory") ) {
 				StringView value = stringview_split_on_spaces(&line);
 				uint64_t cap = 0;
 
@@ -224,6 +228,20 @@ bool translate_source(BlProg *bl, const IncludeList include_paths, const char *f
 		} else {
 			fprintf(stderr, "%s:%lu: ERROR: unknown instruction '%.*s'\n", fname, line_nb, (int)name.count, name.data);
 			return false;
+		}
+	}
+
+	if( entry_point.count > 0 ) {
+		Word addr = {0};
+		if( stringview_number_litteral(entry_point, &addr) ) {
+			bl->entry_point = addr.u64;
+		} else {
+			bl->entry_point = records_find_label(*records, entry_point).u64;
+
+			if( bl->entry_point == UINT64_MAX ) {
+				fprintf(stderr, "ERROR: undefined entry point '%.*s'.\n", (int)entry_point.count, entry_point.data);
+				return false;
+			}
 		}
 	}
 

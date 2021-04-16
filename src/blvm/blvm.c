@@ -31,6 +31,7 @@ bool blvm_load_program_from_file(Blvm *bl, const char *fpath) {
 
 	bl->program_size = meta.program_size;
 	bl->memory_capacity = meta.memory_capacity;
+	bl->ip = meta.entry_point;
 
 	bl->program = (Inst*)malloc(bl->program_size * sizeof(struct inst_t));
 	bl->memory = (uint8_t*)malloc(bl->memory_capacity * sizeof(uint8_t));

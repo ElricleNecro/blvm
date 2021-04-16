@@ -37,6 +37,7 @@ typedef struct blprog_t {
 	BlMemory mem;
 
 	size_t include_level; 		// To avoid include loop
+	size_t entry_point;
 } BlProg;
 
 typedef struct _include_list_t {

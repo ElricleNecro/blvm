@@ -1,6 +1,6 @@
 %include "natives.blhasm"
+%entry_point main
 
-	jmp main
 main:
 	push 0			; F_0
 	push 1			; F_1
