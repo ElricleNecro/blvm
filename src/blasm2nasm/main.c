@@ -97,7 +97,7 @@ int main(int argc, const char **argv) {
 		Inst instruction = bl.prog.program[idx];
 		printf("inst_%lu:\n", idx);
 
-		if( idx == bl->.entry_point )
+		if( idx == bl.entry_point )
 			printf("_start:\n");
 
 		switch(instruction.type) {
