@@ -49,6 +49,7 @@ void blprog_save_program_to_file(BlProg bl, const char *fpath);
 void blprog_clean(BlProg *bl);
 char* search_file(const IncludeList paths, StringView include);
 bool translate_source(BlProg *bl, const IncludeList include_paths, const char *fname, StringView src, Records *records);
+bool translate_litteral(BlProg *bl, StringView sv, Word *word, const char *fname, const size_t line_nb);
 bool stringview_number_litteral(StringView sv, Word *word);
 bool stringview_as_insttype(StringView name, InstType *output);
 

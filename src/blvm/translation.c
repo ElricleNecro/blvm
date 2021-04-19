@@ -68,6 +68,47 @@ char* search_file(const IncludeList paths, StringView include) {
 	return NULL;
 }
 
+bool translate_litteral(BlProg *bl, StringView sv, Word *word, const char *fname, const size_t line_nb) {
+	if( stringview_startwith(sv, '"') ) {
+		sv.count -= 1;
+		sv.data += 1;
+
+		StringView str = stringview_split(&sv, '"');
+
+		if( bl->mem.memory_size + str.count > bl->mem.memory_capacity ) {
+			fprintf(stderr, "%s:%lu: ERROR: not enough memory capacity to store the string '%.*s' (need: %lu, available: %lu).\n", fname, line_nb, (int)str.count, str.data, bl->mem.memory_size + str.count, bl->mem.memory_capacity);
+			return false;
+		}
+
+		(*word).u64 = bl->mem.memory_size;
+
+		bl->mem.memory = realloc(bl->mem.memory, (bl->mem.memory_size + str.count) * sizeof(uint8_t));
+
+		// Copying the string into the VM memory:
+		memcpy(&bl->mem.memory[bl->mem.memory_size], str.data, str.count);
+		bl->mem.memory_size += str.count;
+	} if( stringview_startwith(sv, '\'') ) {
+		sv.data += 1;
+		sv.count -= 1;
+
+		StringView value = stringview_split(&sv, '\'');
+
+		if( value.count != 1 ) {
+			fprintf(stderr, "%s:%lu: ERROR: only character can be stored using \"'\", not '%.*s'.\n", fname, line_nb, (int)value.count, value.data);
+			return false;
+		}
+
+		(*word).u64 = (uint64_t)value.data[0];
+	} else {
+		StringView value = stringview_split_on_spaces(&sv);
+		if( !stringview_number_litteral(value, word) ) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 bool translate_source(BlProg *bl, const IncludeList include_paths, const char *fname, StringView src, Records *records) {
 	if( bl->include_level >= BLASM_INCLUDE_LEVEL_MAX ) {
 		fprintf(stderr, "%s: Too many include level (gone through %lu include).", fname, bl->include_level);
@@ -94,15 +135,17 @@ bool translate_source(BlProg *bl, const IncludeList include_paths, const char *f
 			name.data += 1;
 
 			StringView directive = stringview_trim(name);
+
 			// On what directive are we?
 			if( stringview_eq_cstr(directive, "entry_point") ) {
-				entry_point = stringview_split_on_spaces(&line);
+				StringView operand = stringview_trim(stringview_split(&line, BLASM_COMMENT_SYMBOL));
+				entry_point = operand;
 			} else if( stringview_eq_cstr(directive, "memory") ) {
-				StringView value = stringview_split_on_spaces(&line);
+				StringView operand = stringview_trim(stringview_split(&line, BLASM_COMMENT_SYMBOL));
 				uint64_t cap = 0;
 
-				if( !stringview_to_ulong(value, &cap) ) {
-					fprintf(stderr, "%s:%lu: ERROR: memory instruction require a long value (got '%.*s').\n", fname, line_nb, (int)value.count, value.data);
+				if( !stringview_to_ulong(operand, &cap) ) {
+					fprintf(stderr, "%s:%lu: ERROR: memory instruction require a long value (got '%.*s').\n", fname, line_nb, (int)operand.count, operand.data);
 					return false;
 				}
 
@@ -117,36 +160,13 @@ bool translate_source(BlProg *bl, const IncludeList include_paths, const char *f
 				}
 
 				line = stringview_trim(line);
+				StringView operand = stringview_trim(stringview_split(&line, BLASM_COMMENT_SYMBOL));
 
 				Word word = {0};
 
-				if( stringview_startwith(line, '"') ) {
-					line.count -= 1;
-					line.data += 1;
-
-					StringView str = stringview_split(&line, '"');
-
-					if( bl->mem.memory_size + str.count > bl->mem.memory_capacity ) {
-						fprintf(stderr, "%s:%lu: ERROR: not enough memory capacity to store the string '%.*s' (need: %lu, available: %lu).\n", fname, line_nb, (int)str.count, str.data, bl->mem.memory_size + str.count, bl->mem.memory_capacity);
-						return false;
-					}
-
-					word.u64 = bl->mem.memory_size;
-
-					bl->mem.memory = realloc(bl->mem.memory, (bl->mem.memory_size + str.count) * sizeof(uint8_t));
-
-					// Copying the string into the VM memory:
-					memcpy(&bl->mem.memory[bl->mem.memory_size], str.data, str.count);
-					bl->mem.memory_size += str.count;
-				} else {
-					// And getting the associated value:
-					StringView value = stringview_split_on_spaces(&line);
-
-					if( !stringview_number_litteral(value, &word) ) {
-						// As of now, only number literal are supported:
-						fprintf(stderr, "%s:%lu: ERROR: only numbers and strings can be associated to a label, not '%.*s'.\n", fname, line_nb, (int)directive.count, directive.data);
-						return false;
-					}
+				if( ! translate_litteral(bl, operand, &word, fname, line_nb) ) {
+					fprintf(stderr, "%s:%lu: ERROR: unable to convert '%.*s' into a valid value.\n", fname, line_nb, (int)operand.count, operand.data);
+					return false;
 				}
 
 				if( !records_push_label(records, label, word) ) {
@@ -217,7 +237,7 @@ bool translate_source(BlProg *bl, const IncludeList include_paths, const char *f
 				if( operand.count <= 0 ) {
 					fprintf(stderr, "%s:%lu: ERROR: instruction '%.*s' require an operand.\n", fname, line_nb, (int)name.count, name.data);
 					return false;
-				} else if( !stringview_number_litteral(operand, &inst.operand) ) {
+				} else if( !translate_litteral(bl, operand, &inst.operand, fname, line_nb) && ! stringview_startwith(operand, '"') && ! stringview_startwith(operand, '\'') ) {
 					// If we cannot convert it, it may be a label, so store it to be replaced later:
 					records_push_unresolved(records, bl->prog.program_size, operand, cstr_as_stringview((char*)fname), line_nb);
 				}
