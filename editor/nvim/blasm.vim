@@ -39,7 +39,7 @@ syntax match basmBinInt  display "0[bB][0-1]*"
 
 " Strings
 syntax region basmString start=/\v"/ skip=/\v\\./ end=/\v"/
-"syntax region basmString start=/\v'/ skip=/\v\\./ end=/\v'/
+syntax region basmString start=/\v'/ skip=/\v\\./ end=/\v'/
 
 " Set highlights
 highlight default link basmTodos Todo
