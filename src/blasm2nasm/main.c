@@ -91,12 +91,14 @@ int main(int argc, const char **argv) {
 	printf("segment .text\n");
 	printf("global _start\n");
 	gen_natives(stdout);
-	printf("_start:\n");
 
 	size_t jmp_if_escape_count = 0;
 	for(size_t idx = 0; idx < bl.prog.program_size; idx++) {
 		Inst instruction = bl.prog.program[idx];
 		printf("inst_%lu:\n", idx);
+
+		if( idx == bl->.entry_point )
+			printf("_start:\n");
 
 		switch(instruction.type) {
 			case INST_NOP:
