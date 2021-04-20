@@ -1,6 +1,8 @@
 %include "natives.blhasm"
+%entry_point main
 %define N 30
 
+main:
 	push 0		; [0]
 loop:
 	dup 0		; [0, 0]

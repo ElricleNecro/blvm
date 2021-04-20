@@ -1,10 +1,11 @@
 %include "natives.blhasm"
-%entry_point 0x0
+%entry_point main
 
-push 1
-push 2
-push 3
-add
-add
-native print_i64
-halt
+main:
+	push 1
+	push 2
+	push 3
+	add
+	add
+	native print_i64
+	halt

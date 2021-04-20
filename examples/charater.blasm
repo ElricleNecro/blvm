@@ -1,14 +1,16 @@
 %include "natives.blhasm"
+%entry_point main
 
-push 0
-push 'a'
-write8
-push 1
-push 10
-write8
+main:
+	push 0
+	push 'a'
+	write8
+	push 1
+	push 10
+	write8
 
-push 0
-push 2
-native write
+	push 0
+	push 2
+	native write
 
-halt
+	halt

@@ -1,6 +1,5 @@
 %include "natives.blhasm"
-
-	jmp main
+%entry_point main
 
 ; t
 ; b

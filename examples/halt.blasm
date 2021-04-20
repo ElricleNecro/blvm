@@ -1,1 +1,3 @@
-halt
+%entry_point main
+main:
+	halt

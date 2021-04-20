@@ -1,7 +1,7 @@
 %include "natives.blhasm"
+%entry_point main
 %define N 69420
 
-	jmp main
 main:
 	push N			; [N]
 loop:

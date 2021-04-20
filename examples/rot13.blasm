@@ -17,7 +17,7 @@
 %define a 97
 %define z 122
 
-jmp main
+%entry_point main
 
 ; high >= value >= low
 is_between:

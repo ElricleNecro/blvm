@@ -18,6 +18,7 @@ void blprog_save_program_to_file(BlProg bl, const char *fpath) {
 		.memory_size = bl.mem.memory_size,
 		.memory_capacity = bl.mem.memory_capacity,
 		.program_size = bl.prog.program_size,
+		.entry_point = bl.entry_point,
 	};
 
 	fwrite(&meta, sizeof(BlMeta), 1, file);
@@ -259,10 +260,15 @@ bool translate_source(BlProg *bl, const IncludeList include_paths, const char *f
 			bl->entry_point = records_find_label(*records, entry_point).u64;
 
 			if( bl->entry_point == UINT64_MAX ) {
-				fprintf(stderr, "ERROR: undefined entry point '%.*s'.\n", (int)entry_point.count, entry_point.data);
+				fprintf(stderr, "ERROR: undefined label for the entry point '%.*s'.\n", (int)entry_point.count, entry_point.data);
 				return false;
 			}
 		}
+	} else if( bl->include_level == 0 ) {
+		fprintf(stderr, "%s: ERROR: No entry point was declared, this is mandatory.\n", fname);
+		fprintf(stderr, "You will want to add the following instruction to your program:\n");
+		fprintf(stderr, "\t- `%centry_point <label>`,\n", BLASM_PREPRO_SYMBOL);
+		fprintf(stderr, "\t- `%centry_point <addr>`.\n", BLASM_PREPRO_SYMBOL);
 	}
 
 	for(size_t idx = 0; idx < records->jmps_size; idx++) {

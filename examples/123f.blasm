@@ -1,9 +1,11 @@
 %include "natives.blhasm"
+%entry_point main
 
-push 1.0
-push 2.0
-push 3.0
-addf
-addf
-native print_f64
-halt
+main:
+	push 1.0
+	push 2.0
+	push 3.0
+	addf
+	addf
+	native print_f64
+	halt
