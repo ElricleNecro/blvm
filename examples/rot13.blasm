@@ -1,5 +1,7 @@
 %include "natives.blhasm"
 
+%memory 25
+
 ; only this string needs to be changed
 %define secret "Uryyb, jbeyq! Sebz EBG13."
 

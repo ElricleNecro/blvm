@@ -141,7 +141,7 @@ bool translate_source(BlProg *bl, const IncludeList include_paths, const char *f
 			if( stringview_eq_cstr(directive, "entry_point") ) {
 				StringView operand = stringview_trim(stringview_split(&line, BLASM_COMMENT_SYMBOL));
 				entry_point = operand;
-			} else if( stringview_eq_cstr(directive, "memory") ) {
+			} else if( stringview_eq_cstr(directive, "memory") || stringview_eq_cstr(directive, "__system_mem_min") ) {
 				StringView operand = stringview_trim(stringview_split(&line, BLASM_COMMENT_SYMBOL));
 				uint64_t cap = 0;
 
@@ -150,7 +150,7 @@ bool translate_source(BlProg *bl, const IncludeList include_paths, const char *f
 					return false;
 				}
 
-				bl->mem.memory_capacity = cap;
+				bl->mem.memory_capacity += cap;
 			} else if( stringview_eq_cstr(directive, "define") ) {
 				// Extracting the label name:
 				StringView label = stringview_split_on_spaces(&line);

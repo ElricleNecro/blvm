@@ -53,7 +53,7 @@ int main(int argc, const char *argv[]) {
 	BlProg bl = {0};
 	Records records = {0};
 
-	bl.mem.memory_capacity = BLISP_STATIC_MEMORY_CAPACITY;
+	bl.mem.memory_capacity = 0;
 
 	StringView src = load_file(input);
 	if( translate_source(&bl, include_paths, input, src, &records) )
