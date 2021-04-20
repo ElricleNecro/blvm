@@ -70,6 +70,8 @@ char* search_file(const IncludeList paths, StringView include) {
 }
 
 bool translate_litteral(BlProg *bl, StringView sv, Word *word, const char *fname, const size_t line_nb) {
+	Word result = {0};
+
 	if( stringview_startwith(sv, '"') ) {
 		sv.count -= 1;
 		sv.data += 1;
@@ -81,14 +83,14 @@ bool translate_litteral(BlProg *bl, StringView sv, Word *word, const char *fname
 			return false;
 		}
 
-		(*word).u64 = bl->mem.memory_size;
+		result.u64 = bl->mem.memory_size;
 
 		bl->mem.memory = realloc(bl->mem.memory, (bl->mem.memory_size + str.count) * sizeof(uint8_t));
 
 		// Copying the string into the VM memory:
 		memcpy(&bl->mem.memory[bl->mem.memory_size], str.data, str.count);
 		bl->mem.memory_size += str.count;
-	} if( stringview_startwith(sv, '\'') ) {
+	} else if( stringview_startwith(sv, '\'') ) {
 		sv.data += 1;
 		sv.count -= 1;
 
@@ -99,13 +101,13 @@ bool translate_litteral(BlProg *bl, StringView sv, Word *word, const char *fname
 			return false;
 		}
 
-		(*word).u64 = (uint64_t)value.data[0];
+		result.u64 = (uint64_t)value.data[0];
 	} else {
 		StringView value = stringview_split_on_spaces(&sv);
-		if( !stringview_number_litteral(value, word) ) {
-			return false;
-		}
+		return stringview_number_litteral(value, word);
 	}
+
+	*word = result;
 
 	return true;
 }
