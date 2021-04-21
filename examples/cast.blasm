@@ -8,7 +8,7 @@ main:
 
 	push 3.14152
 	f2u
-	native print_u64
+	call print_u64
 
 	push -1.0
 	f2i
@@ -16,7 +16,7 @@ main:
 
 	push -1.0
 	f2u
-	native print_u64
+	call print_u64
 
 	push 69
 	i2f

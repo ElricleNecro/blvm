@@ -29,7 +29,7 @@ loop:
 check:
 	dup 0		; [N - 1, N - 1]
 	read8		; [N - 1, 0x1d]
-	native print_u64; [N - 1]
+	call print_u64	; [N - 1]
 
 	push 1		; [N - 1, 1]
 	sub		; [N - 2]
@@ -42,5 +42,5 @@ check:
 	jif check	; [N - 2]
 
 	read8		; [0]
-	native print_u64; []
+	call print_u64	; []
 	halt

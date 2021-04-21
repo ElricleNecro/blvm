@@ -1,8 +1,136 @@
 %define alloc     0
 %define free      1
+%define write     7
+
+;; To be reimplemented in blasm:
 %define print_f64 2
 %define print_i64 3
-%define print_u64 4
+; %define print_u64 4
 %define print_ptr 5
 %define print_mem 6
-%define write     7
+
+%__system_mem_min 32
+%define __print_memory "********************************"
+
+;; Swap two memory addresses
+swap8:				; [..., addr1, addr2, ret]
+	swap 2			; [..., ret, addr2, addr1]
+
+	dup 1			; [addr2, addr1, addr2]
+	dup 1			; [addr2, addr1, addr2, addr1]
+
+	read8			; [addr2, addr1, addr2, mem[addr1]]
+	swap 1			; [addr2, addr1, mem[addr1], addr2]
+	read8			; [addr2, addr1, mem[addr1], mem[addr2]]
+
+	dup 2			; [addr2, addr1, mem[addr1], mem[addr2], addr1]
+	swap 1			; [addr2, addr1, mem[addr1], addr1, mem[addr2]]
+	write8			; [addr2, addr1, mem[addr1]]
+
+	dup 2			; [addr2, addr1, mem[addr1], addr2]
+	swap 1			; [addr2, addr1, addr2, mem[addr1]]
+	write8			; [addr2, addr1]
+
+	pop			; [addr2]
+	pop			; []
+
+	ret
+
+sys.reverse:			; [..., addr, n, ret]
+	swap 2			; [..., ret, n, addr]
+	swap 1			; [..., ret, addr, n]
+
+	dup 0			; [addr, n, n]
+	push 2			; [addr, n, n, 2]
+	div			; [addr, n, n/2]
+
+sys.reverse.loop:
+	dup 0			; [addr, n, n/2, n]
+	push 0			; [addr, n, n/2, n, 0]
+	eq			; [addr, n, n/2, bool]
+	jif sys.reverse.end	; [addr, n, n/2]
+
+	dup 2			; [addr, n, n/2, addr]
+	dup 2			; [addr, n, n/2, addr, n]
+	push 1			; [addr, n, n/2, addr, n, 1]
+	sub			; [addr, n, n/2, addr, n-1]
+	dup 1			; [addr, n, n/2, addr, n-1, addr]
+	add			; [addr, n, n/2, addr, addr+n-1]
+	call swap8		; [addr, n, n/2]
+
+	push 1			; [addr, n, n/2, 1]
+	sub			; [addr, n, n/2-1]
+
+	swap 1			; [addr, n/2-1, n]
+	push 2			; [addr, n/2-1, n, 2]
+	sub			; [addr, n/2-1, n-2]
+	swap 1			; [addr, n-2, n/2-1]
+
+	swap 2			; [n/2-1, n-2, addr]
+	push 1			; [n/2-1, n-2, addr, 1]
+	add			; [n/2-1, n-2, addr+1]
+	swap 2			; [addr+1, n-1, n/2-1]
+
+	jmp sys.reverse.loop	; [addr+1, n-2, n/2-1]
+sys.reverse.end:		; [addr+n/2, n-n/2, n/2-n/2]
+
+	pop			; [addr+n/2, n-n/2]
+	pop			; [addr+n/2]
+	pop			; []
+
+	ret
+
+print_u64:			; [..., val, ret]
+	swap 1			; [..., ret, val]
+	push __print_memory	; [val, addr]
+
+print_u64.loop:
+	; looping over all number in val
+	dup 1			; [val, addr, val]
+	push 10			; [val, addr, val, 10]
+	mod			; [val, addr, val%10]
+	push '0'		; [val, addr, val%10, '0']
+	add			; [val, addr, val%10+'0']
+
+	dup 1			; [val, addr, val%10+'0', addr]
+	swap 1			; [val, addr, addr, val%10+'0']
+	write8			; [val, addr]
+
+	push 1			; [val, addr, 1]
+	add			; [val, addr+1]
+
+	swap 1			; [addr+1, val]
+	push 10			; [addr+1, val, 10]
+	div			; [addr+1, val/10]
+	swap 1			; [val/10, addr+1]
+
+	dup 1			; [val/10, addr+1, val/10]
+	push 0			; [val/10, addr+1, val/10, 0]
+	eq			; [val/10, addr+1, bool]
+	not			; [val/10, addr+1, not bool]
+	jif print_u64.loop	; [val/10, addr+1]
+
+	push __print_memory	; [0, addr+n, addr]
+	sub			; [0, n]
+
+	dup 0			; [0, n, n]
+	push __print_memory	; [0, n, n, addr]
+	swap 1			; [0, n, addr, n]
+	call sys.reverse	; [0, n]
+
+	push __print_memory	; [0, n, addr]
+	swap 1			; [0, addr, n]
+
+	native write		; [0]
+
+	pop			; []
+
+	push __print_memory	; [addr]
+	push 10			; [addr, 10]
+	write8			; []
+
+	push __print_memory	; [addr]
+	push 1			; [1]
+	native write		; []
+
+	ret

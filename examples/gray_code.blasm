@@ -10,7 +10,7 @@ loop:
 	push 1			; [0, 0, 0, 1]
 	shr			; [0, 0, 0]
 	xor			; [0, 0]
-	native print_u64	; [0]
+	call print_u64		; [0]
 
 	push 1			; [0, 1]
 	add			; [1]

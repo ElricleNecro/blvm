@@ -8,7 +8,7 @@ loop:
 	dup 0			; [N, N]
 	push 1			; [N, N, 1]
 	and			; [N, N & 1]
-	native print_u64	; [N]
+	call print_u64		; [N]
 
 	push 1			; [N, 1]
 	shr			; [N >> 1]
