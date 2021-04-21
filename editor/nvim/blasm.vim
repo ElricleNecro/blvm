@@ -13,11 +13,12 @@ endif
 syntax keyword basmTodos TODO XXX FIXME NOTE
 
 " Language keywords
-syntax keyword basmKeywords nop push drop dup print_debug
-syntax keyword basmKeywords add sub mul div mod
+syntax keyword basmKeywords nop push pop dup print_debug
+syntax keyword basmKeywords add sub mul div mod imul idiv modi
 syntax keyword basmKeywords addf subf mulf divf
 syntax keyword basmKeywords jmp jif halt swap not
-syntax keyword basmKeywords eq ge gt le lt ne gef
+syntax keyword basmKeywords ieq ige igt ile ilt ine
+syntax keyword basmKeywords eq ge gt le lt ne
 syntax keyword basmKeywords gef gtf lef ltf
 syntax keyword basmKeywords ret call native
 syntax keyword basmKeywords and or xor shr shl bnot
