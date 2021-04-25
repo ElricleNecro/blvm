@@ -4,7 +4,7 @@
 
 ;; To be reimplemented in blasm:
 %define print_f64 2
-%define print_i64 3
+; %define print_i64 3
 ; %define print_u64 4
 %define print_ptr 5
 %define print_mem 6
@@ -80,11 +80,11 @@ sys.reverse.end:		; [addr+n/2, n-n/2, n/2-n/2]
 
 	ret
 
-print_u64:			; [..., val, ret]
+print_positive_integer:
 	swap 1			; [..., ret, val]
 	push __print_memory	; [val, addr]
 
-print_u64.loop:
+print_positive_integer.loop:
 	; looping over all number in val
 	dup 1			; [val, addr, val]
 	push 10			; [val, addr, val, 10]
@@ -108,7 +108,7 @@ print_u64.loop:
 	push 0			; [val/10, addr+1, val/10, 0]
 	eq			; [val/10, addr+1, bool]
 	not			; [val/10, addr+1, not bool]
-	jif print_u64.loop	; [val/10, addr+1]
+	jif print_positive_integer.loop	; [val/10, addr+1]
 
 	push __print_memory	; [0, addr+n, addr]
 	sub			; [0, n]
@@ -124,6 +124,46 @@ print_u64.loop:
 	native write		; [0]
 
 	pop			; []
+
+	ret
+
+print_u64:			; [..., val, ret]
+	swap 1			; [..., ret, val]
+	call print_positive_integer	; []
+
+	push __print_memory	; [addr]
+	push 10			; [addr, 10]
+	write8			; []
+
+	push __print_memory	; [addr]
+	push 1			; [1]
+	native write		; []
+
+	ret
+
+
+print_i64:			; [..., val, ret]
+	swap 1			; [..., ret, val]
+
+	; Check if it is negative
+	dup 0			; [val, val]
+	push 0			; [val, val, 0]
+	ige			; [val, pos]
+	jif print_i64.skip_neg	; [val]
+
+	push __print_memory	; [val, addr]
+	push '-'		; [val, addr, '-']
+	write8			; [val]
+
+	push __print_memory	; [val, addr]
+	push 1			; [val, addr, 1]
+	native write		; [val]
+
+	push -1			; [val, -1]
+	imul			; [-val]
+
+print_i64.skip_neg:		; [val]
+	call print_positive_integer	; []
 
 	push __print_memory	; [addr]
 	push 10			; [addr, 10]

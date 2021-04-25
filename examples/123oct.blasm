@@ -7,5 +7,5 @@ main:
 	push 003
 	add
 	add
-	native print_i64
+	call print_i64
 	halt
