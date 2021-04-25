@@ -331,6 +331,30 @@ int main(int argc, const char **argv) {
 				break;
 
 
+			case INST_IEQ:
+				assert(false && "INST_IEQ compilation is not yet implemented.");
+				break;
+
+			case INST_IGT:
+				assert(false && "INST_IGT compilation is not yet implemented.");
+				break;
+
+			case INST_IGE:
+				assert(false && "INST_IGE compilation is not yet implemented.");
+				break;
+
+			case INST_ILT:
+				assert(false && "INST_ILT compilation is not yet implemented.");
+				break;
+
+			case INST_ILE:
+				assert(false && "INST_ILE compilation is not yet implemented.");
+				break;
+
+			case INST_INE:
+				assert(false && "INST_INE compilation is not yet implemented.");
+				break;
+
 			case INST_EQ:
 				printf("\t;; eq\n");
 				printf("\tmov rsi,[stack_top]\n");

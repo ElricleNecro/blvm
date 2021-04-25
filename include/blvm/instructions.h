@@ -35,12 +35,20 @@ typedef enum insttype_e {
 	INST_RET,
 	INST_NATIVE,
 
+	INST_IEQ,
+	INST_IGT,
+	INST_IGE,
+	INST_ILT,
+	INST_ILE,
+	INST_INE,
+
 	INST_EQ,
 	INST_GT,
 	INST_GE,
 	INST_LT,
 	INST_LE,
 	INST_NE,
+
 	INST_GTF,
 	INST_GEF,
 	INST_LTF,

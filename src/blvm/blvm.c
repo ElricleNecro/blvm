@@ -269,6 +269,30 @@ Trap blvm_execute_inst(Blvm *bl) {
 
 			break;
 
+		case INST_IEQ:
+			OPERATION(bl, i64, u64, ==);
+			break;
+
+		case INST_IGT:
+			OPERATION(bl, i64, u64, >);
+			break;
+
+		case INST_IGE:
+			OPERATION(bl, i64, u64, >=);
+			break;
+
+		case INST_ILT:
+			OPERATION(bl, i64, u64, <);
+			break;
+
+		case INST_ILE:
+			OPERATION(bl, i64, u64, <=);
+			break;
+
+		case INST_INE:
+			OPERATION(bl, i64, u64, !=);
+			break;
+
 		case INST_EQ:
 			OPERATION(bl, u64, u64, ==);
 			break;
