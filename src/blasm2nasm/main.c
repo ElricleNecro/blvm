@@ -191,6 +191,17 @@ int main(int argc, const char **argv) {
 				assert(false && "INST_MOD compilation is not yet implemented.");
 				break;
 
+			case INST_IMUL:
+				assert(false && "INST_IMUL compilation is not yet implemented.");
+				break;
+
+			case INST_IDIV:
+				assert(false && "INST_IDIV compilation is not yet implemented.");
+				break;
+
+			case INST_IMOD:
+				assert(false && "INST_IMOD compilation is not yet implemented.");
+				break;
 
 			case INST_ADDF:
 				printf("\t;; addf");

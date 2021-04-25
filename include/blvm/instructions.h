@@ -19,6 +19,9 @@ typedef enum insttype_e {
 	INST_MUL,
 	INST_DIV,
 	INST_MOD,
+	INST_IMUL,
+	INST_IDIV,
+	INST_IMOD,
 
 	INST_ADDF,
 	INST_SUBF,

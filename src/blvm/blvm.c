@@ -187,6 +187,21 @@ Trap blvm_execute_inst(Blvm *bl) {
 			OPERATION(bl, u64, u64, %);
 			break;
 
+		case INST_IMUL:
+			OPERATION(bl, i64, i64, *);
+			break;
+
+		case INST_IDIV:
+			if( bl->stack[bl->sp - 1].i64 == 0 )
+				return TRAP_DIV_BY_ZERO;
+
+			OPERATION(bl, i64, i64, /);
+			break;
+
+		case INST_IMOD:
+			OPERATION(bl, i64, i64, %);
+			break;
+
 		case INST_ADDF:
 			OPERATION(bl, f64, f64, +);
 			break;

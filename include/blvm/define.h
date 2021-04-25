@@ -42,7 +42,7 @@
 #endif
 
 #ifndef BL_VERSION
-#define BL_VERSION 2
+#define BL_VERSION 3
 #endif
 
 typedef union word_u {

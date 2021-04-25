@@ -13,6 +13,9 @@ const char *inst_names[] = {
 	[INST_MUL]         = "mul",
 	[INST_DIV]         = "div",
 	[INST_MOD]         = "mod",
+	[INST_IMUL]        = "imul",
+	[INST_IDIV]        = "idiv",
+	[INST_IMOD]         = "mod",
 
 	[INST_ADDF]        = "addf",
 	[INST_SUBF]        = "subf",
@@ -78,6 +81,9 @@ const bool inst_required_operand[] = {
 	[INST_MUL]         = false,
 	[INST_DIV]         = false,
 	[INST_MOD]         = false,
+	[INST_IMUL]         = false,
+	[INST_IDIV]         = false,
+	[INST_IMOD]         = false,
 
 	[INST_ADDF]        = false,
 	[INST_SUBF]        = false,
