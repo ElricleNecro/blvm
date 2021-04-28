@@ -66,7 +66,7 @@ void blvm_dump_stack(const Blvm *bl, FILE *stream) {
 	fprintf(stream, "Stack:\n");
 	if( bl->sp > 0) {
 		for(uint64_t i = 0; i < bl->sp; ++i)
-			fprintf(stream, "\t%lu %ld %lf %p\n", bl->stack[i].u64, bl->stack[i].i64, bl->stack[i].f64, bl->stack[i].ptr);
+			fprintf(stream, "\t%lu %ld %0.12lf %p\n", bl->stack[i].u64, bl->stack[i].i64, bl->stack[i].f64, bl->stack[i].ptr);
 	} else {
 		fprintf(stream, "\t[empty]\n");
 	}
