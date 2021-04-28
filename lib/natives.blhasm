@@ -3,7 +3,7 @@
 %define write     7
 
 ;; To be reimplemented in blasm:
-%define print_f64 2
+; %define print_f64 2
 ; %define print_i64 3
 ; %define print_u64 4
 %define print_ptr 5
@@ -11,6 +11,7 @@
 
 %__system_mem_min 32
 %define __print_memory "********************************"
+%define FRAC_PRECISION 10
 
 ;; Swap two memory addresses
 swap8:				; [..., addr1, addr2, ret]
@@ -127,6 +128,163 @@ print_positive_integer.loop:
 
 	ret
 
+frac:				; [..., val, ret]
+	swap 1			; [..., ret, val]
+
+	dup 0			; [val, val]
+
+	f2i			; [val, int(val)]
+	i2f			; [val, float(int(val))]
+
+	subf			; [val - float(int(val))]
+
+	swap 1			; [..., val - float(int(val)), ret]
+	ret
+
+fabs:				; [..., val, ret]
+	swap 1			; [..., ret, val]
+
+	dup 0			; [val, val]
+	push 0.0		; [val, val, 0]
+	gef			; [val, val >= 0]
+	jif fabs.skip		; [val]
+
+	push -0.0		; [val, -0.0]
+	xor			; [val ^ -0.0]
+
+fabs.skip:
+	swap 1			; [..., fabs(val), ret]
+	ret
+
+floor:				; [..., val, ret]
+	swap 1			; [..., ret, val]
+
+	dup 0			; [val, val]
+	f2i			; [val, int(val)]
+	i2f			; [val, float(int(val))]
+	swap 1			; [float(int(val)), val]
+	dup 1			; [float(int(val)), val, float(int(val))]
+	subf			; [float(int(val)), val - float(int(val))]
+
+	push 0.0		; [float(int(val)), val - float(int(val)), 0.0]
+	gef			; [float(int(val)), bool]
+	jif floor.skip		; [float(int(val))]
+
+	push 1.0		; [float(int(val)), 1.0]
+	subf			; [float(int(val)) - 1.0]
+
+floor.skip:			; [floor(val)]
+	swap 1			; [..., floor(val), ret]
+	ret
+
+;; b(n) = 10 ^ {-n}
+sys.b:				; [..., n, ret]
+	swap 1			; [..., ret, n]
+
+	push 1.0			; [n, 1]
+sys.b.loop:
+	dup 1			; [n, 1, n]
+	push 0			; [n, 1, n, 0]
+	ile			; [n, 1, bool]
+	jif sys.b.loop_end	; [n, 1]
+
+	push 0.1		; [n, 1, 0.1]
+	mulf			; [n, 0.1]
+
+	swap 1			; [0.1, n]
+	push 1			; [0.1, n, 1]
+	sub			; [0.1, n-1]
+	swap 1			; [n-1, 0.1]
+
+	jmp sys.b.loop		; [n-1, 0.1]
+
+sys.b.loop_end:			; [0, b]
+	swap 1			; [b, 0]
+	pop			; [b]
+
+	swap 1			; [..., b, ret]
+	ret
+
+print_frac:			; [..., val, ret]
+	swap 1			; [..., ret, val]
+
+	push FRAC_PRECISION	; [val, FRAC_PRECISION]
+	call sys.b		; [val, 10**{-FRAC_PRECISION}]
+	push 2.0		; [val, 10**{-FRAC_PRECISION}, 2.0]
+	divf			; [val, M = 10**{-FRAC_PRECISION} / 2.0]
+
+print_frac.loop:		; [R, M]
+	dup 1			; [R, M, R]
+	push 10.0		; [R, M, R, 10.0]
+	mulf			; [R, M, R * 10.0]
+	call floor		; [R, M, floor(R*10.0)]
+
+	swap 2			; [floor(R*10.0), M, R]
+	push 10.0		; [floor(R*10.0), M, R, 10.0]
+	mulf			; [floor(R*10.0), M, R*10.0]
+	call frac		; [floor(R*10.0), M, frac(R*10.0)]
+	swap 2			; [frac(R*10.0), M, floor(R*10.0)]
+
+	swap 1			; [frac(R*10.0), floor(R*10.0), M]
+	push 10.0		; [frac(R*10.0), floor(R*10.0), M, 10.0]
+	mulf			; [frac(R*10.0), floor(R*10.0), M*10.0]
+	swap 1			; [R = frac(R*10.0), M = M*10.0, U = floor(R*10.0)]
+
+	;; if R < M: break
+	dup 2			; [R, M, U, R]
+	dup 2			; [R, M, U, R, M]
+	ltf			; [R, M, U, R < M]
+	jif print_frac.loop_end	; [R, M, U]
+
+	;; if R > 1 - M: break
+	dup 2			; [R, M, U, R]
+	dup 2			; [R, M, U, R, M]
+	push 1.0		; [R, M, U, R, M, 1.0]
+	swap 1			; [R, M, U, R, 1.0, M]
+	subf			; [R, M, U, R, 1.0 - M]
+	gtf			; [R, M, U, R > 1.0 - M]
+	jif print_frac.loop_end	; [R, M, U]
+
+	f2i			; [R, M, f2i(U)]
+	push '0'		; [R, M, f2i(U), '0']
+	add			; [R, M, f2i(U) + '0']
+
+	push __print_memory	; [R, M, f2i(U) + '0', addr]
+	swap 1			; [R, M, addr, f2i(U) + '0']
+	write8			; [R, M]
+
+	push __print_memory	; [R, M, addr]
+	push 1			; [R, M, addr, 1]
+	native write		; [R, M]
+
+	jmp print_frac.loop	; [R, M]
+
+print_frac.loop_end:		; [R, M, U]
+	dup 2			; [R, M, U, R]
+	push 0.5		; [R, M, U, 0.5]
+	lef			; [R, M, U, R <= 0.5]
+	jif print_frac_skip_inc	; [R, M, U]
+	push 1.0		; [R, M, U, 1.0]
+	addf			; [R, M, U + 1.0]
+
+print_frac_skip_inc:		; [R, M, U]
+	f2u			; [R, M, f2u(U)]
+	push '0'		; [R, M, f2u(U), '0']
+	add			; [R, M, f2u(U) + '0']
+
+	push __print_memory	; [R, M, f2u(U) + '0', addr]
+	swap 1			; [R, M, addr, f2u(U) + '0']
+	write8			; [R, M]
+
+	push __print_memory	; [R, M, addr]
+	push 1			; [R, M, addr, 1]
+	native write		; [R, M]
+
+	pop			; [R]
+	pop			; []
+
+	ret
+
 print_u64:			; [..., val, ret]
 	swap 1			; [..., ret, val]
 	call print_positive_integer	; []
@@ -140,7 +298,6 @@ print_u64:			; [..., val, ret]
 	native write		; []
 
 	ret
-
 
 print_i64:			; [..., val, ret]
 	swap 1			; [..., ret, val]
@@ -164,6 +321,55 @@ print_i64:			; [..., val, ret]
 
 print_i64.skip_neg:		; [val]
 	call print_positive_integer	; []
+
+	push __print_memory	; [addr]
+	push 10			; [addr, 10]
+	write8			; []
+
+	push __print_memory	; [addr]
+	push 1			; [1]
+	native write		; []
+
+	ret
+
+print_f64:			; [..., val, ret]
+	swap 1			; [..., ret, val]
+
+	dup 0			; [val, val]
+
+	; Check if it is negative
+	push -0.0		; [val, val, 0]
+	and			; [val, val & 0]
+	not			; [val, !(val & 0)]
+	; gef			; [val, pos]
+	jif print_f64.skip_neg	; [val]
+
+	push __print_memory	; [val, addr]
+	push '-'		; [val, addr, '-']
+	write8			; [val]
+
+	push __print_memory	; [val, addr]
+	push 1			; [val, addr, 1]
+	native write		; [val]
+
+	push -0.0		; [val, -0.0]
+	xor			; [-val]
+
+print_f64.skip_neg:		; [val]
+	dup 0			; [val, val]
+	f2i			; [val, int(val)]
+	call print_positive_integer	; [val]
+
+	push __print_memory	; [val, addr]
+	push '.'		; [val, addr, '.']
+	write8			; [val]
+
+	push __print_memory	; [val, addr]
+	push 1			; [val, addr, 1]
+	native write		; [val]
+
+	call frac		; [frac(val)]
+	call print_frac		; []
 
 	push __print_memory	; [addr]
 	push 10			; [addr, 10]

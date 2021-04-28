@@ -21,6 +21,6 @@ main:
 	native free	; []
 
 	push 3.0	; [3.0]
-	native print_f64; []
+	call print_f64	; []
 
 	halt

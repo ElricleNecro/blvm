@@ -20,14 +20,14 @@ main:
 
 	push 69
 	i2f
-	native print_f64
+	call print_f64
 
 	push 69
 	u2f
-	native print_f64
+	call print_f64
 
 	push -69
 	i2f
-	native print_f64
+	call print_f64
 
 	halt
