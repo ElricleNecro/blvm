@@ -2,6 +2,7 @@
 
 void blvm_clean(Blvm *bl) {
 	free(bl->program), bl->program_size = 0;
+	free(bl->memory), bl->memory_capacity = 0;
 }
 
 bool blvm_load_program_from_file(Blvm *bl, const char *fpath) {
