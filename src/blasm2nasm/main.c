@@ -313,18 +313,6 @@ int main(int argc, const char **argv) {
 			case INST_NATIVE:
 				printf("\t;; native %lu\n", instruction.operand.u64);
 				switch(instruction.operand.u64) {
-					case 2:
-						printf("\t;; native print_f64\n");
-						printf("\tcall print_f64\n");
-						break;
-					case 3:
-						printf("\t;; native print_i64\n");
-						printf("\tcall print_i64\n");
-						break;
-					case 4:
-						printf("\t;; native print_u64\n");
-						printf("\tcall print_u64\n");
-						break;
 					default:
 						assert(false && "Unsupported native function");
 				}

@@ -1,13 +1,4 @@
-%define alloc     0
-%define free      1
-%define write     7
-
-;; To be reimplemented in blasm:
-; %define print_f64 2
-; %define print_i64 3
-; %define print_u64 4
-%define print_ptr 5
-%define print_mem 6
+%define write     0
 
 %__system_mem_min 32
 %define __print_memory "********************************"
