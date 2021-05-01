@@ -50,6 +50,26 @@ void stringview_free(StringView *data) {
 	}
 }
 
+void stringview_diff(StringView expected, StringView actual, FILE *where) {
+	for(size_t line = 0; expected.count > 0 && actual.count > 0; line++) {
+		StringView expected_line = stringview_split(&expected, '\n');
+		StringView actual_line = stringview_split(&actual, '\n');
+
+		if( !stringview_eq(expected_line, actual_line) ) {
+			fprintf(where, "ERROR: Line %lu differs:\n", line);
+			fprintf(where, "\tExpected: '%.*s'\n", (int)expected_line.count, expected_line.data);
+			fprintf(where, "\tActual: '%.*s'\n", (int)actual_line.count, actual_line.data);
+			return;
+		}
+	}
+
+	if( expected.count > 0 )
+		fprintf(where, "ERROR: More line are expected.\n");
+
+	if( actual.count > 0 )
+		fprintf(where, "ERROR: More line were produced.\n");
+}
+
 int main(int argc, const char *argv[]) {
 	Args *args __attribute__((__cleanup__(clean_args))) = Args_New();
 	Args_Error err;
@@ -121,7 +141,7 @@ int main(int argc, const char *argv[]) {
 	if( expected_path != NULL ) {
 		StringView expected __attribute__((__cleanup__(stringview_free))) = load_file(expected_path);
 		if( ! stringview_eq(expected, (StringView){ .data=recorded, .count=recorded_size }) ) {
-			printf("Output does not match the expected output.\n");
+			stringview_diff(expected, (StringView){ .data=recorded, .count=recorded_size }, stderr);
 			if( recorded != NULL )
 				free(recorded);
 			return EXIT_FAILURE;
