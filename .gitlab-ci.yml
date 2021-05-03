@@ -12,7 +12,7 @@ build:
   # instead of calling g++ directly you can also use some build toolkit like make
   # install the necessary build tools when needed
   before_script:
-    - apt update && apt -y install make xxd
+    - apt update && apt -y install make
   script:
     - .bin/premake5 gmake2
     - make config=release
@@ -27,7 +27,7 @@ build:
       #     - "*.o"
 
 # run tests using the binary built before
-#test:
-#  stage: test
-#  script:
-#    - ./runmytests.sh
+test:
+  stage: test
+  script:
+    - ./test.sh
